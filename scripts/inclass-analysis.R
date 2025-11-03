@@ -4,7 +4,10 @@ library(randomForest)
 library(tidymodels)
 library(modelr)
 library(yardstick)
-load('data/biomarker-clean.RData')
+
+current_path <- getwd()
+ROOT <- dirname(current_path)
+load(file.path(ROOT, "data", "biomarker-clean.RData")) # loads data as biomarker_clean
 
 ## MULTIPLE TESTING
 ####################
