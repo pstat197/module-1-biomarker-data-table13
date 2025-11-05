@@ -67,9 +67,30 @@ ggplot(as.data.frame(prot4), aes(x = prot4)) +
 
 From the density plots, `prot2` looks the most skewed (strongly right-skewed) `prot3` looks slightly right-skewed as well. Both proteins contain large outliers, however the scale of `prot2`'s protein level is much higher, so the same follows for its outliers.
 
+Comparison of `prot2` histogram to its log transformed counterpart:
 
+```{r}
+par(mfrow=c(1,2))
+hist(prot2, main="Prot2 raw")
+hist(log10(prot2), main="Prot2 log transformed")
+```
 
+As we can see, after log transforming, the right-skewed `prot2` now appears more symmetric and of a much smaller and more readable scale.
 
+We can check more rigorously to see how normality differs between the raw and log transformed `prot2` with a QQ-Plot.
+
+```{r}
+# normality check for raw data
+qqnorm(prot2, main = 'Q-Q Plot prot2')
+qqline(prot2)
+
+# normality check for log transformed data
+qqnorm(log10(prot2), main = 'Q-Q Plot log transformed prot2')
+qqline(log10(prot2))
+
+```
+
+After transforming `prot2`, the protein values appear slightly more normal, reducing the influential outliers. Overall, log transforming the protein levels acted as a way to reduce the large scale of the values, and make the data more symmetric.
 
 
 
