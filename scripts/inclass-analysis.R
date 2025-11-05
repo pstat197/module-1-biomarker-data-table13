@@ -4,10 +4,9 @@ library(randomForest)
 library(tidymodels)
 library(modelr)
 library(yardstick)
+library(here)
 
-current_path <- getwd()
-ROOT <- dirname(current_path)
-load(file.path(ROOT, "data", "biomarker-clean.RData")) # loads data as biomarker_clean
+load(here("data", "biomarker-clean.RData")) # loads data as biomarker_clean
 
 ## MULTIPLE TESTING
 ####################
@@ -101,6 +100,9 @@ class_metrics <- metric_set(sensitivity,
 
 testing(biomarker_split) %>%
   add_predictions(fit, type = 'response') %>%
-  class_metrics(estimate = factor(pred > 0.5),
-              truth = factor(class), pred,
-              event_level = 'second')
+  mutate(pred_class = factor(pred > 0.5, levels = c(FALSE, TRUE), labels = c("TD", "ASD")),
+         class_factor = factor(class, levels = c(FALSE, TRUE), labels = c("TD", "ASD"))) %>%
+  class_metrics(estimate = pred_class,
+                truth = class_factor,
+                pred,
+                event_level = 'second')

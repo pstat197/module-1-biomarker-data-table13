@@ -14,20 +14,21 @@ output: pdf_document
 ## Goal: Explore alternative feature selection 
 
 
-```{r}
+```{r, message=FALSE}
 # Load libraries
-suppressPackageStartupMessages(library(tidyverse))
-suppressPackageStartupMessages(library(caret))
-suppressPackageStartupMessages(library(glmnet))
-suppressPackageStartupMessages(library(pROC))
-suppressPackageStartupMessages(library(yardstick))
+library(tidyverse)
+library(caret)
+library(glmnet)
+library(pROC)
+library(yardstick)
+library(here)
 ```
 
 
 ```{r}
 # 1. Load processed data
 
-load("~/module-1-biomarker-data-table13/data/biomarker-clean.RData") 
+load(here('data', 'biomarker-clean.RData')) 
 
 # Rename 
 biomarker <- biomarker_clean
