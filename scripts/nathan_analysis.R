@@ -10,7 +10,7 @@ set.seed(42)
 # ---- load data (choose one path) ----
 load("data/biomarker-clean.RData")
 
-split <- initial_split(biomarker_clean, prop = 0.7, strata = group)   # change ASD to your outcome
+split <- initial_split(biomarker_clean, prop = 0.7, strata = group)   
 train <- training(split)
 test  <- testing(split)
 
