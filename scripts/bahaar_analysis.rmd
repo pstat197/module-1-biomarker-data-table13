@@ -1,0 +1,91 @@
+############################################################
+# Q4 - Bahaar Analysis
+# Goal: Explore alternative feature selection (LASSO + Ridge)
+############################################################
+
+# Load libraries
+library(tidyverse)
+library(glmnet)
+library(pROC)
+library(caret)
+
+# -------------------------------------------------------------------
+# 1. Load processed data (from preprocessing.R step)
+# -------------------------------------------------------------------
+load("data/biomarker-clean.RData")  # loads biomarker_clean
+
+# Rename for convenience
+biomarker <- biomarker_clean
+
+# Convert group to factor (TD = control group)
+biomarker$group <- factor(biomarker$group, levels = c("TD", "ASD"))
+
+# -------------------------------------------------------------------
+# 2. Train/Test Split (80% train, 20% test)
+# -------------------------------------------------------------------
+set.seed(123)
+train_idx <- createDataPartition(biomarker$group, p = 0.8, list = FALSE)
+
+train <- biomarker[train_idx, ]
+test  <- biomarker[-train_idx, ]
+
+# Select predictors only (exclude group and ados)
+predictors <- biomarker %>% select(-group, -ados)
+
+x_train <- as.matrix(predictors[train_idx, ])
+y_train <- biomarker$group[train_idx]
+
+x_test <- as.matrix(predictors[-train_idx, ])
+y_test <- biomarker$group[-train_idx]
+
+# -------------------------------------------------------------------
+# 3. LASSO (alpha = 1)
+# -------------------------------------------------------------------
+set.seed(123)
+lasso_fit <- cv.glmnet(
+  x_train, y_train,
+  alpha = 1,          # LASSO
+  family = "binomial"
+)
+
+# Extract non-zero coefficients
+lasso_coef <- coef(lasso_fit, s = "lambda.min")
+lasso_features <- rownames(lasso_coef)[lasso_coef[, 1] != 0]
+lasso_features <- lasso_features[lasso_features != "(Intercept)"]
+
+cat("\nTop proteins from LASSO:\n")
+print(lasso_features)
+
+# -------------------------------------------------------------------
+# 4. Ridge (alpha = 0)
+# -------------------------------------------------------------------
+set.seed(123)
+ridge_fit <- cv.glmnet(
+  x_train, y_train,
+  alpha = 0,          # Ridge
+  family = "binomial"
+)
+
+# Rank coefficients by absolute value (largest first)
+ridge_coef <- coef(ridge_fit, s = "lambda.min")
+ridge_features <- rownames(ridge_coef)[order(abs(ridge_coef[, 1]), decreasing = TRUE)]
+ridge_features <- ridge_features[2:11]  # top 10 excluding intercept
+
+cat("\nTop proteins from Ridge:\n")
+print(ridge_features)
+
+# -------------------------------------------------------------------
+# 5. Evaluate model (using LASSO-selected features)
+# -------------------------------------------------------------------
+pred_prob <- predict(lasso_fit, newx = x_test, s = "lambda.min", type = "response")
+
+# Convert to binary predictions using 0.5 cutoff
+pred_class <- factor(ifelse(pred_prob > 0.5, "ASD", "TD"), levels = c("TD", "ASD"))
+
+# Confusion matrix
+conf_mat <- confusionMatrix(pred_class, y_test, positive = "ASD")
+print(conf_mat)
+
+# ROC / AUC
+roc_auc <- roc(y_test, as.numeric(pred_prob))
+cat("\nAUROC (LASSO classifier): ", auc(roc_auc), "\n")
