@@ -92,17 +92,30 @@ fit <- glm(class ~ .,
            data = training(biomarker_split), 
            family = 'binomial')
 
-# evaluate errors on test set
+##### fixing class_metrics
+# metric set for class-based metrics
 class_metrics <- metric_set(sensitivity, 
                             specificity, 
-                            accuracy,
-                            roc_auc)
+                            accuracy)
 
-testing(biomarker_split) %>%
+# test set predictions 
+test_results <- testing(biomarker_split) %>%
   add_predictions(fit, type = 'response') %>%
   mutate(pred_class = factor(pred > 0.5, levels = c(FALSE, TRUE), labels = c("TD", "ASD")),
-         class_factor = factor(class, levels = c(FALSE, TRUE), labels = c("TD", "ASD"))) %>%
+         class_factor = factor(class, levels = c(FALSE, TRUE), labels = c("TD", "ASD")))
+
+# class-based metrics
+class_output <- test_results %>%
   class_metrics(estimate = pred_class,
                 truth = class_factor,
-                pred,
-                event_level = 'second')
+                event_level = 'second') # identifies ASD as the event
+
+# prob-based metrics
+prob_output <- test_results %>%
+  roc_auc(truth = class_factor,
+          pred,
+          event_level = 'second')
+
+all_metrics <- bind_rows(class_output, prob_output)
+
+print(all_metrics)

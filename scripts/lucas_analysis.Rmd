@@ -132,7 +132,7 @@ cv_fit <- cv.glmnet(
 )
 
 
-lasso_coef <- coef(cv_fit, s = "lambda.min")
+lasso_coef <- coef(cv_fit, s = "lambda.1se")
 
 selected_proteins <- data.frame(
   protein = rownames(lasso_coef),
@@ -170,7 +170,7 @@ performance <- results_df %>%
           event_level = "second")  # ASD is the "positive" class
 
 cat("Performance Metrics:\n")
-print(knitr::kable(performance))
+knitr::kable(performance)
 
 # Extract individual metrics for display
 acc <- performance %>% filter(.metric == "accuracy") %>% pull(.estimate)
@@ -183,10 +183,25 @@ auc <- performance %>% filter(.metric == "roc_auc") %>% pull(.estimate)
 
 Their results were:
 $$
-\text{roc_auc} = 0.883 \text{ ; accuracy}=0.774  \text{ ; sensitivity} = 0.812  \text{ ; specificity} = 0.733 
+\text{roc auc} = 0.883 \text{ ; accuracy}=0.774  \text{ ; sensitivity} = 0.812  \text{ ; specificity} = 0.733 
 $$
 
+### Adding more benchmark results to `bahaar_analysis`:
 
+```{r, message=FALSE}
+rmarkdown::render("bahaar_analysis.rmd")
+```
 
+```{r}
+# Get confusion matrix object
+cm <- confusionMatrix(pred_class_lasso, y_test, positive = "ASD")
 
+# Print all metrics
+cat("AUC ROC (LASSO classifier) on Test Set: ", auroc_final, "\n")
+cat("Test Set Accuracy (LASSO classifier): ", cm$overall['Accuracy'], "\n")
+cat("Sensitivity (LASSO classifier): ", cm$byClass['Sensitivity'], "\n")
+cat("Specificity (LASSO classifier): ", cm$byClass['Specificity'], "\n")
+```
+
+Thus, AUC and accuracy are improved in our LASSO regression model (compared to 0.883 and 0.774 respectively), specificity remains the same (0.733), and sensitivity is 0.01 unit lower than that of the `inclass-analysis` (0.812).
 

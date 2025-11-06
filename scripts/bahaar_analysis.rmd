@@ -69,7 +69,7 @@ lasso_fit <- cv.glmnet(
 )
 
 # Extract non-zero coefficients (The Alternative Panel)
-lasso_coef <- coef(lasso_fit, s = "lambda.min")
+lasso_coef <- coef(lasso_fit, s = "lambda.1se")
 lasso_features <- rownames(lasso_coef)[lasso_coef[, 1] != 0]
 lasso_features <- lasso_features[lasso_features != "(Intercept)"]
 
@@ -97,7 +97,6 @@ cat("\nAUROC (LASSO classifier) on Test Set: ",
 cat("Test Set Accuracy (LASSO classifier): ", 
     confusionMatrix(pred_class_lasso, y_test, 
                     positive = "ASD")$overall['Accuracy'], "\n")
-
 ```
 Q4: Use any method to find either a simpler panel or an alternative panel.
 
