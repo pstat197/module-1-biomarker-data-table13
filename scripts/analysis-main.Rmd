@@ -292,7 +292,7 @@ The LASSO model was trained on the $80\%$ training partition, and the optimal pe
 
 Results:
 
-1. Alternative Panel: The LASSO model selected a panel of 35 proteins that is listed above. 
+1. Alternative Panel: The LASSO model selected a panel of 35 proteins that is listed above under `selected_features`. 
 
 2. Test Set Performance: The LASSO classifier achieved a Test Set AUC ROC (Area Under the Receiver Operating Characteristic curve) of $0.858$, accuracy of $0.839$, sensitivity of $0.750$, and specificity of $0.933$.
 
