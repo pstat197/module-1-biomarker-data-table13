@@ -213,7 +213,7 @@ respectively.), however, the two-proportion test found no statistically signific
 difference in outlier frequency.
 
 
-----------------------------------------**ANNA ADD SECTION**----------------------------------------
+----------------------------------------**ANNA SECTION**----------------------------------------
 
 ```{r, message=FALSE}
 library(tidyverse)
