@@ -92,7 +92,7 @@ qqline(log10(prot2))
 
 After transforming `prot2`, the protein values appear slightly more normal, reducing the influential outliers. Overall, log transforming the protein levels acted as a way to reduce the large scale of the values, and make the data more symmetric.
 
-## 4. Find a simpler panel that achieves comparable classification strategy using a different method
+## 4. Find an alternative panel that achieves improved classification accuracy
 
 ```{r}
 library(glmnet)
@@ -203,5 +203,5 @@ cat("Sensitivity (LASSO classifier): ", cm$byClass['Sensitivity'], "\n")
 cat("Specificity (LASSO classifier): ", cm$byClass['Specificity'], "\n")
 ```
 
-Thus, AUC and accuracy are improved in our LASSO regression model (compared to 0.883 and 0.774 respectively), specificity remains the same (0.733), and sensitivity is 0.01 unit lower than that of the `inclass-analysis` (0.812).
+Thus, accuracy is improved in our LASSO regression model (compared to 0.774), and we found a panel with 1 fewer protein than that of the benchmark (10 proteins)
 
