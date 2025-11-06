@@ -165,3 +165,56 @@ results_tbl <- bind_rows(
 )
 
 print(results_tbl)
+
+
+metrics <- tribble(
+  ~method,    ~metric,         ~value,
+  "Top-20",   "Sensitivity",    0.812,
+  "Top-20",   "Specificity",    0.867,
+  "Top-20",   "Accuracy",       0.839,
+  "Top-20",   "ROC AUC",        0.946,
+  "Top-10",   "Sensitivity",    0.75,
+  "Top-10",   "Specificity",    0.867,
+  "Top-10",   "Accuracy",       0.806,
+  "Top-10",   "ROC AUC",        0.892
+)
+
+q3_vis_1 <- ggplot(metrics, aes(x = metric, y = value, fill = method)) +
+  geom_col(position = position_dodge(width = 0.7), width = 0.6) +
+  geom_text(aes(label = sprintf("%.3f", value)),
+            position = position_dodge(width = 0.7),
+            vjust = -0.35, size = 3) +
+  scale_y_continuous(limits = c(0,1), expand = expansion(mult = c(0.02, 0.08))) +
+  labs(title = "Performance by Selection Strategy",
+       x = NULL, y = "Score (0–1)") +
+  theme_minimal(base_size = 12) +
+  theme(legend.position = "top",
+        panel.grid.minor = element_blank())
+
+ggsave("results/q3_plot_1.png", plot = q3_vis_1, width = 7, height = 5, dpi = 300)
+
+metrics <- tribble(
+  ~method,    ~metric,         ~value,
+  "Fuzzy",   "Sensitivity",    0.562,
+  "Fuzzy",   "Specificity",    0.733,
+  "Fuzzy",   "Accuracy",       0.645,
+  "Fuzzy",   "ROC AUC",        0.779,
+  "Hard",    "Sensitivity",    0.563,
+  "Hard",    "Specificity",    0.800,
+  "Hard",    "Accuracy",       0.677,
+  "Hard",    "ROC AUC",        0.783
+)
+
+q3_vis_2 <- ggplot(metrics, aes(x = metric, y = value, fill = method)) +
+  geom_col(position = position_dodge(width = 0.7), width = 0.6) +
+  geom_text(aes(label = sprintf("%.3f", value)),
+            position = position_dodge(width = 0.7),
+            vjust = -0.35, size = 3) +
+  scale_y_continuous(limits = c(0,1), expand = expansion(mult = c(0.02, 0.08))) +
+  labs(title = "Performance by Selection Strategy",
+       x = NULL, y = "Score (0–1)") +
+  theme_minimal(base_size = 12) +
+  theme(legend.position = "top",
+        panel.grid.minor = element_blank())
+
+ggsave("results/q3_plot_2.png", plot = q3_vis_2, width = 7, height = 5, dpi = 300)

@@ -115,7 +115,7 @@ The proteins selected for the classifier are the following:
 -   CSRP3
 -   MIG
 
-$$
+\$\$
 
 ## Findings
 
@@ -136,6 +136,10 @@ The log transformation of the protein levels helps to compress the scale of prot
 The original analysis selected 10 proteins. To improve the predictive ability, we extended this to 20 proteins. The top 20 proteins from the *t*-tests and random forest were used to fit a logistic regression model. This improved the sensitivity by 6%, specificity by 13%, accuracy by 9%, and AUC by 4%, likely because adding more predictors will explain more of the variability.
 
 Additionally, instead of using a hard intersection between the top 10 proteins, we tested using a fuzzy intersection, meaning we allowed some overlap between proteins from both analyses. The new analysis decreased the sensitivity by 20%, specificity by 7%, accuracy by 10%, and AUC by 12%. This could be because proteins that were found to be important in both analysis likely had the highest predictive power. When using other proteins that are less explanative, the accuracy decreases significantly.
+
+\![Question 3 20 Protein vs 10 Protein Comparison](../images/q3_plot_1.png){width="50%"}
+
+\![Question 3 Fuzzy vs Hard Comparison](../images/q3_plot_2.png){width="50%"}
 
 ### Improved classifier
 
@@ -160,8 +164,6 @@ knitr::kable(
 )
 
 ```
-
-
 
 The most significant finding from the Pure LASSO model is the dramatic increase in Specificity (from $0.733$ to $0.933$). This trade-off is valuable, as it greatly reduces the rate of false positives, making the panel highly reliable for control classification, a desirable characteristic for preliminary diagnostic screening.
 
