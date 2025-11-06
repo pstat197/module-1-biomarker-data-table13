@@ -1,11 +1,11 @@
 ---
 title: "Biomarkers of ASD"
 subtitle: "If you want a subtitle put it here"
-author: "Lucas Childs, Bahaar Ahuja, ..."
+author: "Lucas Childs, Minu Pabbathi, Nathan Kim, Bahaar Ahuja, Anna Liang"
 date: last-modified
 published-title: "Updated"
 editor: visual
-format: pdf
+format: html
 code-copy: true
 execute:
   message: false
@@ -23,17 +23,15 @@ library(tidyverse)
 
 ## Abstract
 
-This report investigates blood biomarkers for autism spectrum disorder (ASD) with a focus on evaluating how methodological choices influence results. Using the dataset from Hewitson et al. (2021), we examine protein distributions and justify the use of log-transformations to stabilize variance and reduce skewness. We explore subject-level outliers and assess whether their frequency differs between ASD and typically developing (TD) groups. We then evaluate how modifications to protein selection procedures, such as varying the number of top predictive proteins, using training/test partitions, and applying fuzzy intersections, affect classification performance. Finally, we identify alternative protein panels that achieve comparable or improved classification accuracy and benchmark these results against the original in-class analysis. This work highlights the sensitivity of biomarker analyses to preprocessing and methodological decisions and provides guidance for more robust ASD protein panel selection.
+Write a brief one-paragraph abstract that describes the contents of your write-up.
 
-## Aim
-
-The aim of this report is to explore the sensitivity of ASD biomarker analyses to key methodological choices. Specifically, we examine the effects of log-transforming protein levels, assess the presence of subject-level outliers and their group distribution, and investigate how modifications to protein selection procedures (e.g., training/test splits, number of top proteins, fuzzy intersections) impact classification performance. Finally, we identify alternative protein panels that achieve comparable or improved classification accuracy and benchmark these results against the original in-class analysis.
+This report covers an analysis of blood biomarkers for autism spectrum disorder (ASD), analyzing proteins and their association with ASD. Emulating the paper Hewitson et al. 2021, we analyze the dataset used in the paper, data preprocessing including transformations and outlier trimmings, methodologies for selecting a panel of proteins for ASD classification, and improvement in protein panel selection.
 
 ## Dataset
 
-The data consist of blood serum samples from 76 boys with autism spectrum disorder (ASD) and 78 typically developing (TD) boys, aged 18 months to 8 years. Proteomic analysis was performed using SomaLogic’s SOMAScan™ 1.3K platform, measuring levels of 1,317 proteins. Two additional variables, ADOS (ASD severity) and group (ASD vs. TD), were included.
+Write a brief data description, including: how data were obtained; sample characteristics; variables measured; and data preprocessing. This can be largely based on the source paper and should not exceed 1-2 paragraphs.
 
-Preprocessing involved removing missing values, applying a log₁₀ transformation to stabilize variance and reduce skewness, centering and scaling each protein to standardize distributions, and trimming extreme outliers to prevent disproportionate influence. For exploratory analyses, we also considered an untrimmed dataset to examine subject-level outliers.
+Data was taken via blood serum sample from 76 boys with ASD and 78 typically developing (TD) boys ranging from 18 months - 8 years of age. The serum samples were analyzed to identify possible eraly biological markers for ASD. Proteomic analysis of serum was performed using SomaLogic’s SOMAScan$^{TM}$ assay 1.3K platform. A total of 1,317 proteins were analyzed, with two additional variables `ADOS` and `group` pertaining to ASD severity and whether the subject is TD or has ASD. Data preprocessing was done to eliminate missing values, $log_{10}$ transform biomarker levels to stabilize variance, large values, and normalize skewed distributions, center and scale transformed data to standardize the distribution of each biomarker, and trim outliers to prevent disproportionate influence.
 
 ## Summary of published analysis
 
@@ -41,12 +39,7 @@ Summarize the methodology of the paper in 1-3 paragraphs. You need not explain t
 
 **Q1:** A logarithmic transformation was done to the biomarker levels in order to reduce scale, variance, and skewedness of the data. Furthermore, the data was centered and scaled to standardize the distribution of each biomarker.
 
-```{r}
-knitr::include_graphics("../images/Q1Comparison.png")
-```
-
-
-From the density plot, `prot2` looks skewed (strongly right-skewed). It contain large outliers, and the scale of `prot2`'s protein level is very high. But, after log transforming, the right-skewed `prot2` now appears more symmetric and of a much smaller and more readable scale.
+**Q2:** We temporarily removed trimming and flagged protein-level outliers at \$\|z\|\>3\$, then aggregated outliers by subject to identify subject-level outliers. Applying the Tukey boxplot rule to these counts revealed a small set of clear outlier subjects. Descriptively, outlier subjects were more common in TD than ASD, but a two-proportion test indicated the difference was not statistically significant. Overall, extreme values are concentrated in a few participants, so the trimming at \$\\pm3\$ standard deviations mainly reduces their influence rather than indicating a group effect. This validates the preprocessing approach and allows us to proceed with the trimmed data.
 
 **Q4:** We chose to find an alternate protein panel that achieves improved classification accuracy using a guided LASSO approach with differential penalties. Proteins identified through both multiple testing with t-tests and Random Forest importance (`proteins_sstar`) were assigned zero penalty to ensure these were included in the panel without significant shrinkage due to regularization. So, this prior validation was used since there was strong prior evidence that these proteins were relevant. The remaining proteins not selected by the two aforementioned methods received L1 regularization (LASSO regularization), allowing us to discover additional predictive biomarkers while controlling overfitting. We can think of this method from a Bayesian standpoint where the prior data (pre-selected panel of 5 proteins, `proteins_sstar`) informed our belief about protein importance. Overall, our method displayed increased classification accuracy, specifically highlighted by the metric: 'accuracy'. The metrics are depicted below:
 
@@ -122,7 +115,7 @@ Summarize your findings here. I've included some subheaders in a way that seems 
 
 The log transformation of the protein levels helps to compress the scale of protein levels across the wide range of positive values that were encountered. Additionally, the logarithm helps with skewed data, helping to make data more symmetric and closer to a normal distribution (as confirmed with histograms and a QQ Plot).
 
-**Task 2:**
+**Task 2:** After removing the original trimming, we flagged protein-level outliers at $|z|>3$, where 99.7% of data is captured under a normal curve. Using the Tukey cutoff $(Q3 + 1.5\cdot IQR \approx 29.4)$, the 154 test subjects were considered outliers if they had $\geq 30$ outlier proteins. This flagged 13 outlier subjects, distributed as $\frac{4}{76} \approx 5.3\%$ in the ASD group and $\frac{9}{78} \approx 11.5\%$ in the TD group. However, a two-proportion test found no statistically significant difference in this frequency of outlier subjects between ASD and TD (p = 0.2668), suggesting that extreme values are concentrated in a small number of individuals rather than representing a systematic group difference. These findings support the validity of the original trimming approach. The extreme values appear to be leverage points or noise rather than having significant impact, and the $\pm 3$ SD trimming in the initial dataset is appropriate. Thus, we can proceed with the original trimmed dataset for our analysis.
 
 ### Methodological variations
 
