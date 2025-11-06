@@ -142,6 +142,9 @@ metrics <- data.frame(
 kable(metrics, caption = "Performance comparison across models", digits=3)
 
 ```
+
+
+
 Q4: Use any method to find either a simpler panel or an alternative panel.
 
 We chose to find an alternative panel that achieves improved classification accuracy by utilizing the pure LASSO (Least Absolute Shrinkage and Selection Operator) penalized regression model.
