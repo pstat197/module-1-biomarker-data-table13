@@ -37,6 +37,8 @@ Data was taken via blood serum sample from 76 boys with ASD and 78 typically dev
 
 Summarize the methodology of the paper in 1-3 paragraphs. You need not explain the methods in depth as we did in class; just indicate what methods were used and how they were combined. If possible, include a diagram that depicts the methodological design. (Quarto has support for [GraphViz and Mermaid flowcharts](https://quarto.org/docs/authoring/diagrams.html).) Provide key results: the proteins selected for the classifier and the estimated accuracy.
 
+**Q1:** A logarithmic transformation was done to the biomarker levels in order to reduce scale, variance, and skewedness of the data. Furthermore, the data was centered and scaled to standardize the distribution of each biomarker.
+
 **Q4:** We chose to find an alternate protein panel that achieves improved classification accuracy using a guided LASSO approach with differential penalties. Proteins identified through both multiple testing with t-tests and Random Forest importance (`proteins_sstar`) were assigned zero penalty to ensure these were included in the panel without significant shrinkage due to regularization. So, this prior validation was used since there was strong prior evidence that these proteins were relevant. The remaining proteins not selected by the two aforementioned methods received L1 regularization (LASSO regularization), allowing us to discover additional predictive biomarkers while controlling overfitting. We can think of this method from a Bayesian standpoint where the prior data (pre-selected panel of 5 proteins, `proteins_sstar`) informed our belief about protein importance. Overall, our method displayed increased classification accuracy, specifically highlighted by the metric: 'accuracy'. The metrics are depicted below:
 
 $$
@@ -50,9 +52,7 @@ $$
 \text{roc auc} & \text{binary} & 0.858 \\
 \hline
 \end{array}
-$$ 
-Compared to the benchmark results:
-$$
+$$ Compared to the benchmark results: $$
 \begin{array}{llr}
 \hline
 \textbf{metric} & \textbf{estimator} & \textbf{estimate} \\
@@ -63,46 +63,45 @@ $$
 \text{roc auc} & \text{binary} & 0.883 \\
 \hline
 \end{array}
-$$ 
+$$
 
+The proteins selected for the classifier are the following:
 
-The proteins selected for the classifier are the following: 
-
-* CD59
-* 4-1BB
-* Dtk
-* Cadherin-5
-* HAI-1
-* Kallikrein 11
-* PAI-1
-* Growth hormone receptor
-* IGFBP-4
-* MRC2
-* CRDL1
-* IL-17 RD
-* TPSG1
-* MP2K2
-* ENPP7
-* MFGM
-* PCSK7
-* ITI heavy chain H4
-* IgD
-* DBNL
-* DERM
-* Elafin
-* RELT
-* PPID
-* Semaphorin 3E
-* CD27
-* CNDP1
-* IL-17 RC
-* SRCN1
-* Epo
-* GDNF
-* 14-3-3 protein zeta/delta
-* a-Synuclein
-* CSRP3
-* MIG
+-   CD59
+-   4-1BB
+-   Dtk
+-   Cadherin-5
+-   HAI-1
+-   Kallikrein 11
+-   PAI-1
+-   Growth hormone receptor
+-   IGFBP-4
+-   MRC2
+-   CRDL1
+-   IL-17 RD
+-   TPSG1
+-   MP2K2
+-   ENPP7
+-   MFGM
+-   PCSK7
+-   ITI heavy chain H4
+-   IgD
+-   DBNL
+-   DERM
+-   Elafin
+-   RELT
+-   PPID
+-   Semaphorin 3E
+-   CD27
+-   CNDP1
+-   IL-17 RC
+-   SRCN1
+-   Epo
+-   GDNF
+-   14-3-3 protein zeta/delta
+-   a-Synuclein
+-   CSRP3
+-   MIG
 
 ## Findings
 
@@ -125,4 +124,3 @@ Task 3
 **Task 4:** Our alternate protein panel consisted of 35 proteins versus the 5 used in the `inclass-analysis`. We found that combining prior knowledge of protein importance with regularized classification lead to the best model accuracy. Overall our method of combining multiple t-tests, Random Forest importance, and the guided LASSO approach led to improved results compared to the baseline displaying $8\%$ increase in accuracy, $27\%$ increase in specificity, $\approx 3\%$ decrease in AUC, and an $8\%$ decrease in sensitivity. Even though AUC and sensitivity decreased slightly, the other metrics show an overall improvement in classification accuracy.
 
 We also found that just running LASSO regularization on the whole set of proteins led to similar but slightly decreased classification accuracy compared to the baseline approach. In order to navigate around this, the incorporated prior knowledge of the 2-method statistically validated panel of proteins proved useful.
-
