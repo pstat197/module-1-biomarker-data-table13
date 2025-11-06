@@ -5,7 +5,7 @@ author: "Lucas Childs, Bahaar Ahuja, ..."
 date: last-modified
 published-title: "Updated"
 editor: visual
-format: html
+format: pdf
 code-copy: true
 execute:
   message: false
