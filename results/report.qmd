@@ -1,7 +1,7 @@
 ---
 title: "Biomarkers of ASD"
 subtitle: "If you want a subtitle put it here"
-author: "List names here"
+author: "Lucas Childs,..."
 date: last-modified
 published-title: "Updated"
 editor: visual
@@ -33,13 +33,82 @@ Write a brief data description, including: how data were obtained; sample charac
 
 Summarize the methodology of the paper in 1-3 paragraphs. You need not explain the methods in depth as we did in class; just indicate what methods were used and how they were combined. If possible, include a diagram that depicts the methodological design. (Quarto has support for [GraphViz and Mermaid flowcharts](https://quarto.org/docs/authoring/diagrams.html).) Provide key results: the proteins selected for the classifier and the estimated accuracy.
 
+**Q4:** We chose to find an alternate protein panel that achieves improved classification accuracy using a guided LASSO approach with differential penalties. Proteins identified through both multiple testing with t-tests and Random Forest importance (`proteins_sstar`) were assigned zero penalty to ensure these were included in the panel without significant shrinkage due to regularization. So, this prior validation was used since there was strong prior evidence that these proteins were relevant. The remaining proteins not selected by the two aforementioned methods received L1 regularization (LASSO regularization), allowing us to discover additional predictive biomarkers while controlling overfitting. We can think of this method from a Bayesian standpoint where the prior data (pre-selected panel of 5 proteins, `proteins_sstar`) informed our belief about protein importance. Overall, our method displayed increased classification accuracy, specifically highlighted by the metric: 'accuracy'. The metrics are depicted below:
+
+$$
+\begin{array}{llr}
+\hline
+\textbf{metric} & \textbf{estimator} & \textbf{estimate} \\
+\hline
+\text{sensitivity} & \text{binary} & 0.750 \\
+\text{specificity} & \text{binary} & 0.933 \\
+\text{accuracy} & \text{binary} & 0.839 \\
+\text{roc auc} & \text{binary} & 0.858 \\
+\hline
+\end{array}
+$$ 
+Compared to the benchmark results:
+$$
+\begin{array}{llr}
+\hline
+\textbf{metric} & \textbf{estimator} & \textbf{estimate} \\
+\hline
+\text{sensitivity} & \text{binary} & 0.812 \\
+\text{specificity} & \text{binary} & 0.733 \\
+\text{accuracy} & \text{binary} & 0.774 \\
+\text{roc auc} & \text{binary} & 0.883 \\
+\hline
+\end{array}
+$$ 
+
+
+The proteins selected for the classifier are the following: 
+
+* CD59
+* 4-1BB
+* Dtk
+* Cadherin-5
+* HAI-1
+* Kallikrein 11
+* PAI-1
+* Growth hormone receptor
+* IGFBP-4
+* MRC2
+* CRDL1
+* IL-17 RD
+* TPSG1
+* MP2K2
+* ENPP7
+* MFGM
+* PCSK7
+* ITI heavy chain H4
+* IgD
+* DBNL
+* DERM
+* Elafin
+* RELT
+* PPID
+* Semaphorin 3E
+* CD27
+* CNDP1
+* IL-17 RC
+* SRCN1
+* Epo
+* GDNF
+* 14-3-3 protein zeta/delta
+* a-Synuclein
+* CSRP3
+* MIG
+
 ## Findings
 
 Summarize your findings here. I've included some subheaders in a way that seems natural to me; you can structure this section however you like.
 
 ### Impact of preprocessing and outliers
 
-Tasks 1-2
+**Tasks 1-2:** After looking at the raw protein level distributions for a sample of 4 proteins in the dataset, it became clear that the scale of each protein level was very different across proteins. For example, one protein's mean was 17,164 while another's was 458. Furthermore, we found certain proteins had skewed distributions where one protein had a mean roughly 5,000 units larger than its median, indicating a right skew. Looking at each protein's density further revealed the differing scales of each protein level, large outliers, and skewed distributions apparent in 2 out of the 4 randomly selected proteins.
+
+The log transformation of the protein levels helps to compress the scale of protein levels across the wide range of positive values that were encountered. Additionally, the logarithm helps with skewed data, helping to make data more symmetric and closer to a normal distribution (as confirmed with histograms and a QQ Plot).
 
 ### Methodological variations
 
@@ -47,4 +116,7 @@ Task 3
 
 ### Improved classifier
 
-Task 4
+**Task 4:** Our alternate protein panel consisted of 35 proteins versus the 5 used in the `inclass-analysis`. We found that combining prior knowledge of protein importance with regularized classification lead to the best model accuracy. Overall our method of combining multiple t-tests, Random Forest importance, and the guided LASSO approach led to improved results compared to the baseline displaying $8\%$ increase in accuracy, $27\%$ increase in specificity, $\approx 3\%$ decrease in AUC, and an $8\%$ decrease in sensitivity. Even though AUC and sensitivity decreased slightly, the other metrics show an overall improvement in classification accuracy.
+
+We also found that just running LASSO regularization on the whole set of proteins led to similar but slightly decreased classification accuracy compared to the baseline approach. In order to navigate around this, the incorporated prior knowledge of the 2-method statistically validated panel of proteins proved useful.
+

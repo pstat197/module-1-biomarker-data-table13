@@ -302,7 +302,7 @@ $$
 \text{roc auc} = 0.883 \text{ ; accuracy}=0.774  \text{ ; sensitivity} = 0.812  \text{ ; specificity} = 0.733 
 $$
 
-Overall, accuracy was increased by $8\%$, specificity increased by $27\%$, AUC stayed the same at $0.858$, and sensitivity decreased by $8\%$. Even though sensitivity increased slightly, the other metric show an improvement in overall classification accuracy.
+Overall, accuracy was increased by $8\%$, specificity increased by $27\%$, AUC stayed the same at $0.858$, and sensitivity decreased by $8\%$. Even though sensitivity decreased slightly, the other metric show an improvement in overall classification accuracy.
 
 
 
