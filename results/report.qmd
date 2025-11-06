@@ -50,7 +50,23 @@ The log transformation of the protein levels helps to compress the scale of prot
 
 From the density plot, `prot2` looks skewed (strongly right-skewed). It contain large outliers, and the scale of `prot2`'s protein level is very high. But, after log transforming, the right-skewed `prot2` now appears more symmetric and of a much smaller and more readable scale.
 
-**Task 2:** After removing the original trimming, we flagged protein-level outliers at $|z|>3$, where 99.7% of data is captured under a normal curve. Using the Tukey cutoff $(Q3 + 1.5\cdot IQR \approx 29.4)$, the 154 test subjects were considered outliers if they had $\geq 30$ outlier proteins. This flagged 13 outlier subjects, distributed as $\frac{4}{76} \approx 5.3\%$ in the ASD group and $\frac{9}{78} \approx 11.5\%$ in the TD group. However, a two-proportion test found no statistically significant difference in this frequency of outlier subjects between ASD and TD (p = 0.2668), suggesting that extreme values are concentrated in a small number of individuals rather than representing a systematic group difference. These findings support the validity of the original trimming approach. The extreme values appear to be leverage points or noise rather than having significant impact, and the $\pm 3$ SD trimming in the initial dataset is appropriate. Thus, we can proceed with the original trimmed dataset for our analysis.
+**Task 2:** After removing the original trimming, we flagged protein-level outliers at $|z|>3$, where 99.7% of data is captured under a normal curve. Using the Tukey cutoff $(Q3 + 1.5\cdot IQR \approx 29.4)$, the 154 test subjects were considered outliers if they had $\geq 30$ outlier proteins. This flagged 13 outlier subjects, as listed below.
+
+![](images/q2top13-02.png){alt="Question 1 comparison" fig-align="center" width="130"}
+
+The frequency of these outlier subjects are $\frac{4}{76} \approx 5.3\%$ in the ASD group and $\frac{9}{78} \approx 11.5\%$ in the TD group. 
+
+We then compared the number of outlier proteins for subjects across both groups.
+
+![](images/q2boxplot-03.png){alt="Question 1 comparison" fig-align="center" width="500"}
+
+From the visual, it seems like the TD group has more subjects w/ higher outlier counts, including the overall maximum around 150. This supports the previous table, as 9/13 of the outlier subjects were from the TD group.
+
+Although the table and box plots showed that outlier subjects were more common in TD than ASD, a further two-proportion test found no statistically significant difference in this frequency of outlier subjects between both groups.
+
+![](images/q2proptest-01.png){alt="Question 1 comparison" fig-align="center" width="150"}
+
+Since the p value of 0.2668 is greater than alpha = 0.05, we conclude there’s no statistically significant difference in the frequency of outlier subjects between ASD and TD. This suggests that extreme values are concentrated in a small number of individuals rather than representing a systematic group difference. These findings support the validity of the original trimming approach. The extreme values appear to be leverage points or noise rather than having significant impact, and the $\pm 3$ SD trimming in the initial dataset is appropriate. Thus, we can proceed with the original trimmed dataset for our analysis.
 
 ### Methodological variations
 
