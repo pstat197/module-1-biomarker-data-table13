@@ -1,7 +1,6 @@
 ---
 title: "Biomarkers of ASD"
-subtitle: "If you want a subtitle put it here"
-author: "List names here"
+author: "Lucas Childs, Minu Pabbathi, Nathan Kim, Bahaar Ahuja, Anna Liang"
 date: last-modified
 published-title: "Updated"
 editor: visual
@@ -14,8 +13,6 @@ execute:
   cache: true
 ---
 
-Use this as a template. Keep the headers and remove all other text. In all, your report can be quite short. When it is complete, render and then push changes to your team repository.
-
 ```{r}
 # load any other packages and read data here
 library(tidyverse)
@@ -23,28 +20,207 @@ library(tidyverse)
 
 ## Abstract
 
-Write a brief one-paragraph abstract that describes the contents of your write-up.
+This report investigates blood biomarkers for autism spectrum disorder (ASD) with a focus on evaluating how methodological choices influence results. Using the dataset from Hewitson et al. (2021), we examine protein distributions and justify the use of log-transformations to stabilize variance and reduce skewness. We explore subject-level outliers and assess whether their frequency differs between ASD and typically developing (TD) groups. We then evaluate how modifications to protein selection procedures, such as varying the number of top predictive proteins, using training/test partitions, and applying fuzzy intersections, affect classification performance. Finally, we identify alternative protein panels that achieve comparable or improved classification accuracy and benchmark these results against the original in-class analysis. This work highlights the sensitivity of biomarker analyses to preprocessing and methodological decisions and provides guidance for more robust ASD protein panel selection.
+
+## Aim
+
+The aim of this report is to explore the sensitivity of ASD biomarker analyses to key methodological choices. Specifically, we examine the effects of log-transforming protein levels, assess the presence of subject-level outliers and their group distribution, and investigate how modifications to protein selection procedures (e.g., training/test splits, number of top proteins, fuzzy intersections) impact classification performance. Finally, we identify alternative protein panels that achieve comparable or improved classification accuracy and benchmark these results against the original in-class analysis.
 
 ## Dataset
 
-Write a brief data description, including: how data were obtained; sample characteristics; variables measured; and data preprocessing. This can be largely based on the source paper and should not exceed 1-2 paragraphs.
+The data consist of blood serum samples from 76 boys with autism spectrum disorder (ASD) and 78 typically developing (TD) boys, aged 18 months to 8 years. Proteomic analysis was performed using SomaLogic’s SOMAScan™ 1.3K platform, measuring levels of 1,317 proteins. Two additional variables, ADOS (ASD severity) and group (ASD vs. TD), were included.
+
+Preprocessing involved removing missing values, applying a log₁₀ transformation to stabilize variance and reduce skewness, centering and scaling each protein to standardize distributions, and trimming extreme outliers to prevent disproportionate influence. For exploratory analyses, we also considered an untrimmed dataset to examine subject-level outliers.
 
 ## Summary of published analysis
 
-Summarize the methodology of the paper in 1-3 paragraphs. You need not explain the methods in depth as we did in class; just indicate what methods were used and how they were combined. If possible, include a diagram that depicts the methodological design. (Quarto has support for [GraphViz and Mermaid flowcharts](https://quarto.org/docs/authoring/diagrams.html).) Provide key results: the proteins selected for the classifier and the estimated accuracy.
+The original researchers used multiple *t*-tests to see whether there were significant differences in protein levels between the ASD group and the neurotypical group. Based on those *t* values, the top 10 proteins were selected for the prediction model. Each protein was also correlated with ADOS scores and the top 10 highly correlated proteins were selected. The third approach was random forest, which involves using a random forest to predict whether a participant has ASD or is typically developing. By keeping track of which variables were used most to define splits, a variable importance score can be used to determine which predictors were most influential in prediction. Using this method, the top proteins were selected.
+
+After running all three methods and determining the top 10 proteins for each method, 5 proteins that were common to all three methods were selected as the core proteins. Each of the other proteins were added one at a time to see their impact on the AUC, leading to about four additional proteins being classified as optimal proteins. The final 9 proteins were IgD, suPAR, MAPK14, EPHB2, DERM, ROR1, GI24, elF-4H, and ARSB. After all nine were combined, the AUC of the classifier was approximately 0.860.
+
+Below is a flowchart of this process.
+
+![](images/flowchart.png){alt="Question 1 comparison" fig-align="left" width="500"}
 
 ## Findings
 
-Summarize your findings here. I've included some subheaders in a way that seems natural to me; you can structure this section however you like.
-
 ### Impact of preprocessing and outliers
 
-Tasks 1-2
+After looking at the raw protein level distributions for a sample of 4 proteins in the dataset, it became clear that the scale of each protein level was very different across proteins. For example, one protein's mean was 17,164 while another's was 458. Furthermore, we found certain proteins had skewed distributions where one protein had a mean roughly 5,000 units larger than its median, indicating a right skew. Looking at each protein's density further revealed the differing scales of each protein level, large outliers, and skewed distributions apparent in 2 out of the 4 randomly selected proteins.
+
+The log transformation of the protein levels helps to compress the scale of protein levels across the wide range of positive values that were encountered. Additionally, the logarithm helps with skewed data, helping to make data more symmetric and closer to a normal distribution (as confirmed with histograms and a QQ Plot).
+
+
+![](images/Q1Comparison copy.png){fig-align="center"}
+
+From the density plot, `prot2` looks skewed (strongly right-skewed). It contain large outliers, and the scale of `prot2`'s protein level is very high. But, after log transforming, the right-skewed `prot2` now appears more symmetric and of a much smaller and more readable scale.
+
+**Task 2:** After removing the original trimming, we flagged protein-level outliers at $|z|>3$, where 99.7% of data is captured under a normal curve. Using the Tukey cutoff $(Q3 + 1.5\cdot IQR \approx 29.4)$, the 154 test subjects were considered outliers if they had $\geq 30$ outlier proteins. This flagged 13 outlier subjects, as listed below.
+
+![](images/q2top13.png){alt="Question 1 comparison" fig-align="center" width="115"}
+
+The frequency of these outlier subjects are $\frac{4}{76} \approx 5.3\%$ in the ASD group and $\frac{9}{78} \approx 11.5\%$ in the TD group.
+
+We then compared the number of outlier proteins for subjects across both groups.
+
+![](images/q2boxplot.png){alt="Question 1 comparison" fig-align="center" width="450"}
+
+From the visual, it seems like the TD group has more subjects w/ higher outlier counts, including the overall maximum around 150. This supports the previous table, as 9/13 of the outlier subjects were from the TD group.
+
+Although the table and box plots showed that outlier subjects were more common in TD than ASD, a further two-proportion test found no statistically significant difference in this frequency of outlier subjects between both groups.
+
+![](images/q2proptest.png){alt="Question 1 comparison" fig-align="center" width="150"}
+
+Since the p value of 0.2668 is greater than alpha = 0.05, we conclude there’s no statistically significant difference in the frequency of outlier subjects between ASD and TD. This suggests that extreme values are concentrated in a small number of individuals rather than representing a systematic group difference. These findings support the validity of the original trimming approach. The extreme values appear to be leverage points or noise rather than having significant impact, and the $\pm 3$ SD trimming in the initial dataset is appropriate. Thus, we can proceed with the original trimmed dataset for our analysis.
 
 ### Methodological variations
 
-Task 3
+To evaluate the sensitivity of the analysis to different methodological choices, we first modified the workflow so that all feature selection was carried out exclusively on a training partition, while a separate test set was held out and used only once at the very end for evaluation. This change avoids data leakage and gives a more realistic estimate of model performance.
+
+The original analysis selected 10 proteins. To improve the predictive ability, we extended this to 20 proteins. The top 20 proteins from the *t*-tests and random forest were used to fit a logistic regression model. This improved the sensitivity by 6%, specificity by 13%, accuracy by 9%, and AUC by 4%, likely because adding more predictors will explain more of the variability.
+
+Additionally, instead of using a hard intersection between the top 10 proteins, we tested using a fuzzy intersection, meaning we allowed some overlap between proteins from both analyses. The new analysis decreased the sensitivity by 20%, specificity by 7%, accuracy by 10%, and AUC by 12%. This could be because proteins that were found to be important in both analysis likely had the highest predictive power. When using other proteins that are less explanative, the accuracy decreases significantly.
+
+![](images/q3_plot_1 copy.png){width="50%"}
+
+![](images/q3_plot_2 copy.png){width="50%"}
 
 ### Improved classifier
 
-Task 4
+We explored two distinct alternative panel approaches for Task 4: a Pure LASSO approach and a Guided LASSO approach, benchmarking both against the original In-class Intersection model (a 5-protein panel). Our methods sought either a comparable simpler panel or an alternative panel with improved classification performance. The Pure LASSO approach used LASSO penalized regression for both feature selection and final classification, resulting in a 43-protein panel.
+
+The Guided LASSO approach took proteins identified through both multiple testing with t-tests and Random Forest importance (`proteins_sstar`) and assigned them zero penalty to ensure these were included in the panel without significant shrinkage due to regularization. So, there was this prior validation used because there was strong prior evidence that these proteins were relevant. The remaining proteins not selected by the two aforementioned methods received L1 regularization (LASSO regularization), allowing us to discover additional predictive biomarkers while controlling overfitting. We can think of this method from a Bayesian standpoint where the prior data (pre-selected panel of 5 proteins, `proteins_sstar`) informed our belief about protein importance. Overall, our method displayed increased classification accuracy, specifically highlighted by the metric: 'accuracy'. The metrics are depicted below:
+
+**Guided LASSO performance metrics:**
+
+$$
+\begin{array}{llr}
+\hline
+\textbf{metric} & \textbf{estimator} & \textbf{estimate} \\
+\hline
+\text{sensitivity} & \text{binary} & 0.750 \\
+\text{specificity} & \text{binary} & 0.933 \\
+\text{accuracy} & \text{binary} & 0.839 \\
+\text{roc auc} & \text{binary} & 0.858 \\
+\hline
+\end{array}
+$$ 
+
+Compared to the $\underline{benchmark}$ results: 
+$$
+\begin{array}{llr}
+\hline
+\textbf{metric} & \textbf{estimator} & \textbf{estimate} \\
+\hline
+\text{sensitivity} & \text{binary} & 0.812 \\
+\text{specificity} & \text{binary} & 0.733 \\
+\text{accuracy} & \text{binary} & 0.774 \\
+\text{roc auc} & \text{binary} & 0.883 \\
+\hline
+\end{array}
+$$
+Thus, the Guided LASSO approach made roughly an $8\%$ decrease in sensitivity, $27\%$ increase in specificity, $8\%$ increase in accuracy, and $3\%$ decrease in AUC. This method found a panel of 35 proteins which resulted in better ability of identifying true negatives and greater ability to recognize both true positives and true negatives out of all test results. The proteins selected for the classifier were:
+
+- CD59
+- 4-1BB
+- Dtk
+- Cadherin-5
+- HAI-1
+- Kallikrein 11
+- PAI-1
+- Growth hormone receptor
+- IGFBP-4
+- MRC2
+- CRDL1
+- IL-17 RD
+- TPSG1
+- MP2K2
+- ENPP7
+- MFGM
+- PCSK7
+- ITI heavy chain H4
+- IgD
+- DBNL
+- DERM
+- Elafin
+- RELT
+- PPID
+- Semaphorin 3E
+- CD27
+- CNDP1
+- IL-17 RC
+- SRCN1
+- Epo
+- GDNF
+- 14-3-3 protein zeta/delta
+- a-Synuclein
+- CSRP3
+- MIG
+
+Before attempting the Guided LASSO approach we implemented a pure LASSO model (giving the same L1 penalty to all proteins) with the given metrics:
+
+```{r}
+# Create comparison data frame
+comparison_data <- data.frame(
+  Metric = c(
+    "Accuracy", 
+    "Sensitivity", 
+    "Specificity", 
+    "AUROC"
+  ),
+  InClassIntersection = c(
+    0.774, 
+    0.812, 
+    0.733, 
+    0.883
+  ),
+  PureLASSO = c(
+    0.767, 
+    0.800, 
+    0.733, 
+    0.858
+  ),
+  ChangeVsBaseline = c(
+    "$\\approx 1\\%$ decrease", 
+    "$1.5\\%$ decrease", 
+    "constant", 
+    "$\\approx 2.8\\%$ decrease"
+  ),
+  KeyInsight = c(
+    "Comparable overall accuracy.",
+    "Reduced ability to correctly identify ASD cases.",
+    "Unchanged performance in ruling out controls.",
+    "Lower overall discrimination ability."
+  )
+)
+
+# Render the table using kable with appropriate formatting
+knitr::kable(
+  comparison_data,
+  caption = "Comparative Performance and Insights: Pure LASSO vs. In-class Baseline",
+  col.names = c(
+    "Metric", 
+    "In-class Intersection", 
+    "Pure LASSO", 
+    "Change vs. Baseline", 
+    "Key Insight"
+  ),
+  align = 'lcccc',  # Left-align first column, Center-align the rest
+  digits = 3         # Ensure numerical columns are formatted nicely
+)
+```
+
+![Question 4 Pure LASSO](images/Q4PureLasso copy.png){width="50%"}
+
+While the performance metrics for this model were similar to the baseline across all metrics, the overall strategy of combining multiple feature selection methods (t-tests, Random Forest, and Guided LASSO) provided a robust and statistically validated pathway to stable panel selection.
+
+## Conclusion
+
+Our comprehensive analysis demonstrates the critical impact of methodological choices on blood biomarker classification performance for ASD. Key findings include the necessary use of log-transformation to manage data scale and skewness, and the finding that subject-level outliers did not significantly differ between ASD and TD groups, supporting the initial data trimming. Most significantly, our alternative panel approaches highlighted a crucial performance trade-off in Task 4:
+
+The **Pure LASSO** model (43 proteins) sacrificed a small amount of overall discriminative ability (AUROC decreased by $\approx 2.8\%$) and Accuracy (decreased by $1\%$). The **Guided LASSO** approach provided a robust, multi-method validation pathway, resulting in a stable 35-protein panel with improved accuracy ($8\%$) and specificity ($27\%$) compared to the baseline.
+
+## Next Steps
+
+1.  External Validation: Validate the Pure LASSO panel (or the Guided LASSO panel) on an independent, large-scale dataset to confirm the observed high Specificity and generalizability across different populations.
+3.  Biological Interpretation: Conduct a functional analysis of the 35 proteins selected by the Guided LASSO model to determine if they align with known biological pathways associated with ASD, thereby providing biological grounding for the statistical model.

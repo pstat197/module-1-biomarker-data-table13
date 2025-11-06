@@ -1,0 +1,639 @@
+---
+title: "Analysis-main"
+author: "Lucas Childs"
+date: "2025-11-06"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## 1. What is the reason for log transforming protein levels in `biomarker-raw.csv`? 
+
+```{r, message=FALSE}
+set.seed(1234)
+library(tidyverse)
+library(here)
+rawdata <- read.csv(here("data", "biomarker-raw.csv"))
+
+# random sample of 4 proteins to look at distributions of their levels
+rand_indices <- sample(3:ncol(rawdata), 4)
+
+prot1d <- as.numeric(rawdata[2:nrow(rawdata), rand_indices[1]])
+prot1 <- prot1d[!is.na(prot1d)]
+  
+prot2d <- as.numeric(rawdata[2:nrow(rawdata), rand_indices[2]])
+prot2 <- prot2d[!is.na(prot2d)]
+
+prot3d <- as.numeric(rawdata[2:nrow(rawdata), rand_indices[3]])
+prot3 <- prot3d[!is.na(prot3d)]
+
+prot4d <- as.numeric(rawdata[2:nrow(rawdata), rand_indices[4]])
+prot4 <- prot4d[!is.na(prot4d)]
+
+summary(prot1)
+summary(prot2)
+summary(prot3)
+summary(prot4)
+```
+
+Looking at the summary statistics for 4 randomly selected proteins, the mean values differ significantly, with `prot1`'s mean being 17,164 and `prot3`'s mean being $\approx 458$. `prot2`'s mean is roughly 5000 units greater than its median as well, indicating a right skew.
+
+The log transformation of the protein levels helps compress the scale of protein levels since we have a wide range of positive values, where some are very large. Additionally, the logarithm helps with skewed data, and we have evidence that some of the data is skewed, since `prot2` has a mean much larger than its median.
+
+```{r}
+library(ggplot2)
+ggplot(as.data.frame(prot1), aes(x = prot1)) + 
+  geom_histogram(aes(y=after_stat(density)), bins = 30) +
+  geom_density(color="red") +
+  ggtitle('Protein 1 density')
+
+ggplot(as.data.frame(prot2), aes(x = prot2)) + 
+  geom_histogram(aes(y=after_stat(density)), bins = 30) +
+  geom_density(color="red") +
+  ggtitle('Protein 2 density')
+
+ggplot(as.data.frame(prot3), aes(x = prot3)) + 
+  geom_histogram(aes(y=after_stat(density)), bins = 30) +
+  geom_density(color="red") +
+  ggtitle('Protein 3 density')
+
+ggplot(as.data.frame(prot4), aes(x = prot4)) + 
+  geom_histogram(aes(y=after_stat(density)), bins = 30) +
+  geom_density(color="red") +
+  ggtitle('Protein 4 density')
+```
+
+From the density plots, `prot2` looks the most skewed (strongly right-skewed) `prot3` looks slightly right-skewed as well. Both proteins contain large outliers, however the scale of `prot2`'s protein level is much higher, so the same follows for its outliers.
+
+Comparison of `prot2` histogram to its log transformed counterpart:
+
+```{r}
+par(mfrow=c(1,2))
+hist(prot2, main="Prot2 raw")
+hist(log10(prot2), main="Prot2 log transformed")
+```
+
+As we can see, after log transforming, the right-skewed `prot2` now appears more symmetric and of a much smaller and more readable scale.
+
+We can check more rigorously to see how normality differs between the raw and log transformed `prot2` with a QQ-Plot.
+
+```{r}
+# normality check for raw data
+qqnorm(prot2, main = 'Q-Q Plot prot2')
+qqline(prot2)
+
+# normality check for log transformed data
+qqnorm(log10(prot2), main = 'Q-Q Plot log transformed prot2')
+qqline(log10(prot2))
+
+```
+
+After transforming `prot2`, the protein values appear slightly more normal, reducing the influential outliers. Overall, log transforming the protein levels acted as a way to reduce the large scale of the values, and make the data more symmetric.
+
+## 2. Temporarily remove the outlier trimming from preprocessing and do some exploratory analysis of the outlying values. Are there specific subjects (not values) that seem to be outliers? If so, are outliers more frequent in one group or the other?
+
+Removed the outlier trimming from the preprocessing.R file and generated 
+biomarker-clean-notrim.RData. 
+
+Load the new untrimmed data:
+```{r, message = FALSE}
+library(dplyr)
+library(here)
+library(knitr)
+
+load(here("data", "biomarker-clean-notrim.RData"))
+bm_notrim_clean <- biomarker_clean 
+
+# Define protein columns
+protein <- setdiff(names(bm_notrim_clean), c("group","ados"))
+
+# Show a small subset of the data
+kable(bm_notrim_clean[1:10, c("group","ados", protein[1:8])])
+```
+
+To answer if there are specific subjects (not values) that seem to be outliers,
+we will first count the number of outliers per subject.
+
+We defined outliers at the protein level if its value is greater than 
+3 standard deviations above or below the protein's mean (e.g., |z| > 3), 
+since under a normal distribution about 99.7% of values lie within 3 standard
+deviations.
+
+Thus, we flagged proteins that have (z score) |z| > 3 as outliers.
+```{r}
+out_flag <- bm_notrim_clean[, protein] %>% mutate(across(everything(), ~ abs(.x) > 3))
+out_counts <- tibble(
+  subject = seq_len(nrow(bm_notrim_clean)),
+  group   = bm_notrim_clean$group,
+  n_out   = rowSums(out_flag, na.rm=TRUE)
+) 
+```
+
+We then counted outlier proteins for each subject and listed the top 10 
+subjects with the highest counts of outlier proteins.
+```{r}
+top_subjects <- out_counts %>% arrange(desc(n_out)) %>% slice_head(n = 10)
+kable(top_subjects)
+```
+
+From this table, there seems to be several subjects that have many outliers
+proteins.
+
+Subject #154 had 157 outlier proteins out of the 1,125 proteins tested, 
+so roughly 14% of them were outliers. 
+
+Also, subjects 108, 9, 121, 52, and 77 all have over 100 proteins over the 
+threshold we set, translating to roughly 10.1% - 11.3% of the proteins in each subject
+being considered an outlier.
+
+Now flagging subject-level outliers, we will use the boxplot rule (Tukey rule),
+which flags points greater than Q3 + (1.5 x IQR) or less than Q1 - (1.5 x IQR). 
+```{r}
+cutoff <- quantile(out_counts$n_out, 0.75) + 1.5 * IQR(out_counts$n_out)
+subject_outliers <- subset(out_counts, n_out >= cutoff)
+
+kable(cutoff, caption = "Outlier subject cutoff")
+kable(subject_outliers, caption = "Subjects considered to be outliers")   
+```
+
+Thus, we flagged subjects with equal or more than 30 outliers proteins as subject-level outliers.
+They include subjects 9, 24, 52, 73, 77, 98, 100, 108, 121, 131, 147, 150, and 154.
+
+
+Now, answering if outliers are more frequent in one group or the other:
+
+Visually comparing the distributions of outlier proteins per subject by group.
+Each point is a subject, and the y-axis is the number of flagged outlier proteins. 
+```{r}
+library(ggplot2)
+ggplot(out_counts, aes(group, n_out)) +
+  geom_boxplot(outlier.shape=NA) + geom_jitter(width=.15, alpha=.4)
+```
+From the visual, it seems like the TD group has more subjects w/ higher outlier 
+counts, including the overall maximum around 150. This supports the previous table, 
+as 9/13 of the outlier subjects were from the TD group.
+
+```{r}
+# Counting outlier subjects per group
+x <- c(
+  ASD = sum(subject_outliers$group == "ASD"),
+  TD  = sum(subject_outliers$group == "TD")
+)
+
+# Total subjects per group
+n <- c(
+  ASD = sum(out_counts$group == "ASD"),
+  TD  = sum(out_counts$group == "TD")
+)
+
+# Two-sided test to test if proportions are different
+pt <- prop.test(x = x, n = n)
+
+kable(data.frame(
+    p_value = signif(pt$p.value, 4),
+    prop1 = round(unname(pt$estimate[1]), 4), # prop1 = ASD
+    prop2 = round(unname(pt$estimate[2]), 4) # prop2 = TD
+    ),
+  caption = "Two-proportion test: ASD vs TD")
+```
+In total, there were 76 subjects in the ASD group and 78 subjects in the TD group,
+so having 4 ASD outlier subjects and 9 TD outlier subjects yields 5.3% and 11.5%
+respectively.
+
+However, running the two-proportion test, the p-value (0.2668) is greater than 
+alpha = 0.05, so there’s no statistically significant difference in the frequency 
+of outlier subjects between ASD and TD.
+
+To summarize, counting outliers per subject (values more than 3 standard deviations above or below the protein’s mean) showed there are subjects with many outlying proteins (e.g., 154, 108, 9, 121, 52, 77). 
+A quick proportion calculation found there to be a higher proportion of outlier subjects 
+within the TD group compared to the ASD group (11.5% versus 5.3%
+respectively.), however, the two-proportion test found no statistically significant 
+difference in outlier frequency.
+
+
+----------------------------------------**ANNA SECTION**----------------------------------------
+
+```{r, message=FALSE}
+library(tidyverse)
+library(infer)
+library(randomForest)
+library(tidymodels)
+library(modelr)
+library(yardstick)
+library(glmnet)
+library(here)
+
+load(here("data", "biomarker-clean.RData")) # loads data as biomarker_clean
+
+```
+
+## 3. Repeat the analysis but carry out the entire selection procedure on a training partition -- in other words, set aside some testing data at the very beginning and don't use it until you are evaluating accuracy at the very end
+
+```{r}
+library(rsample)
+
+colnames(biomarker_clean) <- make.names(colnames(biomarker_clean), unique = TRUE)
+
+split <- initial_split(biomarker_clean, prop = 0.7, strata = group)
+train <- training(split)
+test  <- testing(split)
+
+train$group <- factor(train$group, levels = c("TD", "ASD"))
+test$group  <- factor(test$group,  levels = c("TD", "ASD"))
+
+feature_cols <- setdiff(names(biomarker_clean), "group")
+
+# Convert to numeric
+train[feature_cols] <- lapply(train[feature_cols], as.numeric)
+test[feature_cols]  <- lapply(test[feature_cols],  as.numeric)
+
+# Remove features that are all NA from training set
+all_na <- names(which(sapply(train[feature_cols], function(x) all(is.na(x)))))
+feature_cols <- setdiff(feature_cols, all_na)
+
+# Impute missing values (median of training set ONLY)
+train_medians <- sapply(train[feature_cols], function(x) median(x, na.rm = TRUE))
+for (f in feature_cols) {
+  train[[f]][is.na(train[[f]])] <- train_medians[[f]]
+  test[[f]][is.na(test[[f]])]   <- train_medians[[f]]
+}
+
+# Remove near-zero variance features based on training set
+is_const <- sapply(train[feature_cols], function(x) sd(x) < 1e-8 || !is.finite(sd(x)))
+feature_cols <- feature_cols[!is_const]
+
+dim(train); dim(test)
+table(train$group); table(test$group)
+```
+
+
+## Choose a larger number (more than ten) of top predictive proteins using each selection method
+
+```{r}
+## MULTIPLE TESTING
+####################
+
+# function to compute tests
+test_fn <- function(.df){
+  t_test(.df, 
+         formula = level ~ group,
+         order = c('ASD', 'TD'),
+         alternative = 'two-sided',
+         var.equal = F)
+}
+
+ttests_out <- biomarker_clean %>%
+  # drop ADOS score
+  select(-ados) %>%
+  # arrange in long format
+  pivot_longer(-group, 
+               names_to = 'protein', 
+               values_to = 'level') %>%
+  # nest by protein
+  nest(data = c(level, group)) %>% 
+  # compute t tests
+  mutate(ttest = map(data, test_fn)) %>%
+  unnest(ttest) %>%
+  # sort by p-value
+  arrange(p_value) %>%
+  # multiple testing correction
+  mutate(m = n(),
+         hm = log(m) + 1/(2*m) - digamma(1),
+         rank = row_number(),
+         p.adj = m*hm*p_value/rank)
+
+# select significant proteins
+proteins_s1 <- ttests_out %>%
+  slice_min(p.adj, n = 20) %>%
+  pull(protein)
+
+## RANDOM FOREST
+##################
+
+# store predictors and response separately
+predictors <- biomarker_clean %>%
+  select(-c(group, ados))
+
+response <- biomarker_clean %>% pull(group) %>% factor()
+
+# fit RF
+set.seed(101422)
+rf_out <- randomForest(x = predictors, 
+                       y = response, 
+                       ntree = 1000, 
+                       importance = T)
+
+# check errors
+rf_out$confusion
+
+# compute importance scores
+proteins_s2 <- rf_out$importance %>% 
+  as_tibble() %>%
+  mutate(protein = rownames(rf_out$importance)) %>%
+  slice_max(MeanDecreaseGini, n = 20) %>%
+  pull(protein)
+
+## LOGISTIC REGRESSION
+#######################
+
+# select subset of interest
+proteins_sstar <- intersect(proteins_s1, proteins_s2)
+
+biomarker_sstar <- biomarker_clean %>%
+  select(group, any_of(proteins_sstar)) %>%
+  mutate(class = factor(group == 'ASD', levels = c(FALSE, TRUE))) %>% 
+  select(-group)
+
+# partition into training and test set
+set.seed(101422)
+biomarker_split <- biomarker_sstar %>%
+  initial_split(prop = 0.8)
+
+# fit logistic regression model to training set
+fit <- glm(class ~ ., 
+           data = training(biomarker_split), 
+           family = 'binomial')
+
+# predict on test data
+predictions <- testing(biomarker_split) %>%
+  mutate(pred = predict(fit, ., type = "response"),
+         pred_class = factor(ifelse(pred > 0.5, TRUE, FALSE),
+                             levels = c(FALSE, TRUE)))
+
+# evaluate metrics
+class_metrics <- metric_set(sensitivity, specificity, accuracy)
+
+bind_rows(
+  class_metrics(predictions,
+                truth = class,
+                estimate = pred_class,
+                event_level = "second"),
+  roc_auc(predictions,
+          truth = class,
+          pred,
+          event_level = "second")
+)
+
+# sensitivity: 0.812
+# specificity: 0.867
+# accuracy: 0.839
+# roc_auc: 0.946
+
+# Instead of selecting for just 10 proteins, we selected for 20. This improved the sensitivity by 6%, 
+# specificity by 13%, accuracy by 9%, and AUC by 4%.
+
+```
+
+## Use a fuzzy intersection instead of a hard intersection to combine the sets of top predictive proteins across selection methods
+
+```{r}
+proteins_s1_fuzzy <- ttests_out %>%
+  slice_min(p.adj, n = 10) %>%
+  pull(protein)
+
+proteins_s2_fuzzy <- rf_out$importance %>% 
+  as_tibble() %>%
+  mutate(protein = rownames(rf_out$importance)) %>%
+  slice_max(MeanDecreaseGini, n = 10) %>%
+  pull(protein)
+
+proteins_sstar_fuzzy <- union(proteins_s1_fuzzy, proteins_s2_fuzzy)
+
+biomarker_sstar_fuzzy <- biomarker_clean %>%
+  select(group, any_of(proteins_sstar_fuzzy)) %>%
+  mutate(class = factor(group == 'ASD', levels = c(FALSE, TRUE))) %>% 
+  select(-group)
+
+# partition into training and test set
+set.seed(101422)
+biomarker_split_fuzzy <- biomarker_sstar_fuzzy %>%
+  initial_split(prop = 0.8)
+
+# fit logistic regression model to training set
+fit_fuzzy <- glm(class ~ ., 
+           data = training(biomarker_split_fuzzy), 
+           family = 'binomial')
+
+# predict on test data
+predictions_fuzzy <- testing(biomarker_split_fuzzy) %>%
+  mutate(pred = predict(fit_fuzzy, ., type = "response"),
+         pred_class = factor(ifelse(pred > 0.5, TRUE, FALSE),
+                             levels = c(FALSE, TRUE)))
+
+# evaluate metrics
+class_metrics <- metric_set(sensitivity, specificity, accuracy)
+
+bind_rows(
+  class_metrics(predictions_fuzzy,
+                truth = class,
+                estimate = pred_class,
+                event_level = "second"),
+  roc_auc(predictions_fuzzy,
+          truth = class,
+          pred,
+          event_level = "second")
+)
+
+# sensitivity: 0.562
+# specificity: 0.733
+# accuracy: 0.645
+# AUC: 0.779
+
+# Instead of doing a hard intersection, we looked at a fuzzy intersection of the proteins. This decreased the
+#  sensitivity by 20%, specificity by 7%, accuracy by 10%, and AUC by 12%.
+```
+
+----------------------------------------**Nathan/Minu SECTION**----------------------------------------
+
+## 4. Find an alternative panel that achieves improved classification accuracy
+### Benchmark your results against the in-class analysis.
+
+**Goal: Explore alternative feature selection**
+
+
+```{r}
+## MULTIPLE TESTING
+####################
+# function to compute tests
+test_fn <- function(.df){
+  t_test(.df, 
+         formula = level ~ group,
+         order = c('ASD', 'TD'),
+         alternative = 'two-sided',
+         var.equal = F)
+}
+
+ttests_out <- biomarker_clean %>%
+  # drop ADOS score
+  select(-ados) %>%
+  # arrange in long format
+  pivot_longer(-group, 
+               names_to = 'protein', 
+               values_to = 'level') %>%
+  # nest by protein
+  nest(data = c(level, group)) %>% 
+  # compute t tests
+  mutate(ttest = map(data, test_fn)) %>%
+  unnest(ttest) %>%
+  # sort by p-value
+  arrange(p_value) %>%
+  # multiple testing correction
+  mutate(m = n(),
+         hm = log(m) + 1/(2*m) - digamma(1),
+         rank = row_number(),
+         p.adj = m*hm*p_value/rank)
+
+# select significant proteins
+proteins_s1 <- ttests_out %>%
+  slice_min(p.adj, n = 10) %>%
+  pull(protein)
+
+## RANDOM FOREST
+##################
+# store predictors and response separately
+predictors <- biomarker_clean %>%
+  select(-c(group, ados))
+
+response <- biomarker_clean %>% pull(group) %>% factor()
+
+# fit RF
+set.seed(101422)
+rf_out <- randomForest(x = predictors, 
+                       y = response, 
+                       ntree = 1000, 
+                       importance = T)
+
+# compute importance scores
+proteins_s2 <- rf_out$importance %>% 
+  as_tibble() %>%
+  mutate(protein = rownames(rf_out$importance)) %>%
+  slice_max(MeanDecreaseGini, n = 10) %>%
+  pull(protein)
+
+## LASSO with guided penalty 
+###########################################
+
+# Get the intersection of important proteins
+proteins_sstar <- intersect(proteins_s1, proteins_s2)
+cat("Selected proteins from intersection:", proteins_sstar, "\n")
+cat("Number of selected proteins:", length(proteins_sstar), "\n")
+
+# LASSO with all proteins, choosing different penalties for sstar vs x_train
+
+# full dataset (all proteins except ADOS)
+biomarker_full <- biomarker_clean %>%
+  select(-ados) %>%
+  mutate(class = (group == 'ASD')) %>%
+  select(-group)
+
+# training and test set
+set.seed(101422)
+biomarker_split <- biomarker_full %>%
+  initial_split(prop = 0.8)
+
+# matrices for glmnet
+x_train <- training(biomarker_split) %>%
+  select(-class) %>%
+  as.matrix()
+
+y_train <- training(biomarker_split) %>%
+  pull(class) %>%
+  as.numeric()
+
+x_test <- testing(biomarker_split) %>%
+  select(-class) %>%
+  as.matrix()
+
+y_test <- testing(biomarker_split) %>%
+  pull(class) %>%
+  as.numeric()
+
+# penalty factors: lower penalty for pre-selected proteins
+penalty_factors <- rep(1, ncol(x_train))  # Start with penalty = 1 for all
+names(penalty_factors) <- colnames(x_train)
+
+# no penalty for sstar proteins (ones selected by t-test and RF)
+penalty_factors[proteins_sstar] <- 0  
+
+cat("\nPenalty factors:\n")
+print(table(penalty_factors))
+
+# fit LASSO with guided penalties
+set.seed(101422)
+lasso_guided <- cv.glmnet(
+  x_train, y_train,
+  alpha = 1,
+  family = "binomial",
+  penalty.factor = penalty_factors,
+  type.measure = "auc",
+  nfolds = 10
+)
+
+# get predictions
+pred_prob_guided <- predict(lasso_guided, newx = x_test, 
+                           s = "lambda.min", type = "response")[,1]
+
+# metrics
+test_results_guided <- data.frame(
+  pred = pred_prob_guided,
+  pred_class = factor(pred_prob_guided > 0.5, 
+                      levels = c(FALSE, TRUE), 
+                      labels = c("TD", "ASD")),
+  class_factor = factor(y_test, 
+                       levels = c(0, 1), 
+                       labels = c("TD", "ASD"))
+)
+
+# class-based metrics
+class_metrics <- metric_set(sensitivity, specificity, accuracy)
+class_output_guided <- test_results_guided %>%
+  class_metrics(estimate = pred_class,
+                truth = class_factor,
+                event_level = 'second')
+
+# AUC
+prob_output_guided <- test_results_guided %>%
+  roc_auc(truth = class_factor,
+          pred,
+          event_level = 'second')
+
+# Combine all metrics
+all_metrics_guided <- bind_rows(class_output_guided, prob_output_guided)
+print("\nGuided LASSO Results:")
+print(all_metrics_guided)
+
+# which coefficients are non-zero
+coef_guided <- coef(lasso_guided, s = "lambda.min")
+selected_features <- rownames(coef_guided)[which(coef_guided != 0)]
+selected_features <- selected_features[selected_features != "(Intercept)"]
+
+cat("\nSelected features by guided LASSO:\n")
+print(selected_features)
+cat("\nFeatures from proteins_sstar that were kept:\n")
+print(intersect(selected_features, proteins_sstar))
+```
+
+We chose to find an alternative panel that achieves improved classification accuracy using guided LASSO. 
+
+First we identified important proteins using the method used in class: multiple t-test approach into a random forest in which importance scores were used to select proteins. Proteins that appeared in both lists were used in the guided LASSO model but with no penalty, whereas the list of all the other proteins in the full dataset were given the full $L1$ penalty. You can think of this from a Bayesian standpoint where we used prior data (the pre-selected panel of 5 proteins) to inform our prior belief about protein importance.
+
+The LASSO model was trained on the $80\%$ training partition, and the optimal penalty ($\lambda_{\text{min}}$) automatically selected the feature panel.
+
+Results:
+
+1. Alternative Panel: The LASSO model selected a panel of 35 proteins that is listed above under `selected_features`. 
+
+2. Test Set Performance: The LASSO classifier achieved a Test Set AUC ROC (Area Under the Receiver Operating Characteristic curve) of $0.858$, accuracy of $0.839$, sensitivity of $0.750$, and specificity of $0.933$.
+
+Comparison to the benchmark:
+
+$$
+\text{roc auc} = 0.883 \text{ ; accuracy}=0.774  \text{ ; sensitivity} = 0.812  \text{ ; specificity} = 0.733 
+$$
+
+Overall, accuracy was increased by $8\%$, specificity increased by $27\%$, AUC stayed the same at $0.858$, and sensitivity decreased by $8\%$. Even though sensitivity decreased slightly, the other metric show an improvement in overall classification accuracy.
+
+
+
