@@ -171,3 +171,15 @@ In addition to the Pure LASSO model, the Guided LASSO approach (using prior know
 -   MIG
 
 While the performance metrics for this model were similar to the baseline across all metrics except Specificity (Accuracy $0.770$, Sensitivity $0.745$, Specificity $0.733$, AUROC $0.857$), the overall strategy of combining multiple feature selection methods (t-tests, Random Forest, and Guided LASSO) provided a robust and statistically validated pathway to stable panel selection.
+
+## Conclusion
+
+Our comprehensive analysis demonstrates the critical impact of methodological choices on blood biomarker classification performance for ASD. Key findings include the necessary use of log-transformation to manage data scale and skewness, and the finding that subject-level outliers did not significantly differ between ASD and TD groups, supporting the initial data trimming. Most significantly, our alternative panel approaches highlighted a crucial performance trade-off in Task 4:
+
+The **Pure LASSO** model (43 proteins) sacrificed a small amount of overall discriminative ability (AUROC decreased by $\approx 2.8\%$) and Sensitivity (decreased by $7.6\%$) to achieve a massive $27.3\%$ increase in Specificity (from $0.733$ to $0.933$). This trade-off is highly valuable for diagnostic applications where minimizing false positives (incorrectly classifying a TD subject as ASD) is paramount for initial screening confidence. The **Guided LASSO** approach provided a robust, multi-method validation pathway, resulting in a stable 35-protein panel with accuracy similar to the baseline.
+
+## Next Steps
+
+1.  External Validation: Validate the Pure LASSO panel (or the Guided LASSO panel) on an independent, large-scale dataset to confirm the observed high Specificity and generalizability across different populations.
+2.  Optimize Trade-off: Explore Elastic Net (a mix of L1 and L2 regularization) to fine-tune the balance between Sensitivity (identifying true ASD cases) and Specificity (ruling out controls) based on the clinical priority.
+3.  Biological Interpretation: Conduct a functional analysis of the 43 proteins selected by the Pure LASSO model to determine if they align with known biological pathways associated with ASD, thereby providing biological grounding for the statistical model.
