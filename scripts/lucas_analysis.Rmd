@@ -94,90 +94,182 @@ After transforming `prot2`, the protein values appear slightly more normal, redu
 
 ## 4. Find an alternative panel that achieves improved classification accuracy
 
-```{r}
-library(glmnet)
+```{r, message=FALSE}
+library(tidyverse)
+library(infer)
+library(randomForest)
+library(tidymodels)
+library(modelr)
 library(yardstick)
+library(glmnet)
+library(here)
 
-load(here("data", "biomarker-clean.RData"))
+load(here("data", "biomarker-clean.RData")) # loads data as biomarker_clean
+```
 
-X <- biomarker_clean %>%
-  select(-c(group, ados)) %>%
+
+```{r}
+## MULTIPLE TESTING
+####################
+# function to compute tests
+test_fn <- function(.df){
+  t_test(.df, 
+         formula = level ~ group,
+         order = c('ASD', 'TD'),
+         alternative = 'two-sided',
+         var.equal = F)
+}
+
+ttests_out <- biomarker_clean %>%
+  # drop ADOS score
+  select(-ados) %>%
+  # arrange in long format
+  pivot_longer(-group, 
+               names_to = 'protein', 
+               values_to = 'level') %>%
+  # nest by protein
+  nest(data = c(level, group)) %>% 
+  # compute t tests
+  mutate(ttest = map(data, test_fn)) %>%
+  unnest(ttest) %>%
+  # sort by p-value
+  arrange(p_value) %>%
+  # multiple testing correction
+  mutate(m = n(),
+         hm = log(m) + 1/(2*m) - digamma(1),
+         rank = row_number(),
+         p.adj = m*hm*p_value/rank)
+
+# select significant proteins
+proteins_s1 <- ttests_out %>%
+  slice_min(p.adj, n = 10) %>%
+  pull(protein)
+
+## RANDOM FOREST
+##################
+# store predictors and response separately
+predictors <- biomarker_clean %>%
+  select(-c(group, ados))
+
+response <- biomarker_clean %>% pull(group) %>% factor()
+
+# fit RF
+set.seed(101422)
+rf_out <- randomForest(x = predictors, 
+                       y = response, 
+                       ntree = 1000, 
+                       importance = T)
+
+# compute importance scores
+proteins_s2 <- rf_out$importance %>% 
+  as_tibble() %>%
+  mutate(protein = rownames(rf_out$importance)) %>%
+  slice_max(MeanDecreaseGini, n = 10) %>%
+  pull(protein)
+
+## LASSO with guided penalty 
+###########################################
+
+# Get the intersection of important proteins
+proteins_sstar <- intersect(proteins_s1, proteins_s2)
+cat("Selected proteins from intersection:", proteins_sstar, "\n")
+cat("Number of selected proteins:", length(proteins_sstar), "\n")
+
+# LASSO with all proteins, choosing different penalties for sstar vs x_train
+
+# full dataset (all proteins except ADOS)
+biomarker_full <- biomarker_clean %>%
+  select(-ados) %>%
+  mutate(class = (group == 'ASD')) %>%
+  select(-group)
+
+# training and test set
+set.seed(101422)
+biomarker_split <- biomarker_full %>%
+  initial_split(prop = 0.8)
+
+# matrices for glmnet
+x_train <- training(biomarker_split) %>%
+  select(-class) %>%
   as.matrix()
 
-# turn outcome into a factor
-y <- as.factor(ifelse(biomarker_clean$group == "ASD", 1, 0))
+y_train <- training(biomarker_split) %>%
+  pull(class) %>%
+  as.numeric()
 
-set.seed(123)
-n <- nrow(X)
-train_idx <- sample(1:n, size = floor(0.8 * n))
-test_idx <- setdiff(1:n, train_idx)
+x_test <- testing(biomarker_split) %>%
+  select(-class) %>%
+  as.matrix()
 
-X_train <- X[train_idx, ]
-y_train <- y[train_idx]
+y_test <- testing(biomarker_split) %>%
+  pull(class) %>%
+  as.numeric()
 
-X_test <- X[test_idx, ]
-y_test <- y[test_idx]
+# penalty factors: lower penalty for pre-selected proteins
+penalty_factors <- rep(1, ncol(x_train))  # Start with penalty = 1 for all
+names(penalty_factors) <- colnames(x_train)
 
-cat("Training set size:", length(train_idx), "\n")
-cat("Test set size:", length(test_idx), "\n\n")
+# no penalty for sstar proteins (ones selected by t-test and RF)
+penalty_factors[proteins_sstar] <- 0  
 
-# LASSO on training data
+cat("\nPenalty factors:\n")
+print(table(penalty_factors))
 
-cv_fit <- cv.glmnet(
-  x = X_train,
-  y = y_train,
+# fit LASSO with guided penalties
+set.seed(101422)
+lasso_guided <- cv.glmnet(
+  x_train, y_train,
+  alpha = 1,
   family = "binomial",
-  alpha = 1,  # LASSO
+  penalty.factor = penalty_factors,
+  type.measure = "auc",
   nfolds = 10
 )
 
+# get predictions
+pred_prob_guided <- predict(lasso_guided, newx = x_test, 
+                           s = "lambda.min", type = "response")[,1]
 
-lasso_coef <- coef(cv_fit, s = "lambda.1se")
-
-selected_proteins <- data.frame(
-  protein = rownames(lasso_coef),
-  coefficient = as.vector(lasso_coef)
-) %>%
-  filter(protein != "(Intercept)", coefficient != 0) %>%
-  arrange(desc(abs(coefficient)))
-
-cat("LASSO selected", nrow(selected_proteins), "proteins\n\n")
-
-# Get predicted probabilities
-pred_prob <- predict(cv_fit, 
-                     newx = X_test, 
-                     s = "lambda.1se", 
-                     type = "response")[,1]
-
-# Get predicted classes (threshold = 0.5)
-pred_class <- as.factor(ifelse(pred_prob > 0.5, 1, 0))
-
-# Performance
-# Create data frame for yardstick
-results_df <- tibble(
-  truth = y_test,
-  predicted = pred_class,
-  prob_ASD = pred_prob
+# metrics
+test_results_guided <- data.frame(
+  pred = pred_prob_guided,
+  pred_class = factor(pred_prob_guided > 0.5, 
+                      levels = c(FALSE, TRUE), 
+                      labels = c("TD", "ASD")),
+  class_factor = factor(y_test, 
+                       levels = c(0, 1), 
+                       labels = c("TD", "ASD"))
 )
 
-# Calculate metrics
-metrics <- metric_set(accuracy, sensitivity, specificity, roc_auc)
+# class-based metrics
+class_metrics <- metric_set(sensitivity, specificity, accuracy)
+class_output_guided <- test_results_guided %>%
+  class_metrics(estimate = pred_class,
+                truth = class_factor,
+                event_level = 'second')
 
-performance <- results_df %>%
-  metrics(truth = truth, 
-          estimate = predicted, 
-          prob_ASD,
-          event_level = "second")  # ASD is the "positive" class
+# AUC
+prob_output_guided <- test_results_guided %>%
+  roc_auc(truth = class_factor,
+          pred,
+          event_level = 'second')
 
-cat("Performance Metrics:\n")
-knitr::kable(performance)
+# Combine all metrics
+all_metrics_guided <- bind_rows(class_output_guided, prob_output_guided)
+print("\nGuided LASSO Results:")
+print(all_metrics_guided)
 
-# Extract individual metrics for display
-acc <- performance %>% filter(.metric == "accuracy") %>% pull(.estimate)
-sens <- performance %>% filter(.metric == "sensitivity") %>% pull(.estimate)
-spec <- performance %>% filter(.metric == "specificity") %>% pull(.estimate)
-auc <- performance %>% filter(.metric == "roc_auc") %>% pull(.estimate)
+# which coefficients are non-zero
+coef_guided <- coef(lasso_guided, s = "lambda.min")
+selected_features <- rownames(coef_guided)[which(coef_guided != 0)]
+selected_features <- selected_features[selected_features != "(Intercept)"]
+
+cat("\nSelected features by guided LASSO:\n")
+print(selected_features)
+cat("\nFeatures from proteins_sstar that were kept:\n")
+print(intersect(selected_features, proteins_sstar))
 ```
+
 
 **Evaluation metrics:** In Hewitson et al. 2021, a logistic regression model was fit using their final panel of proteins, and they evaluated its performance using AUC, sensitivity, and specificity. To benchmark our method, we'll compare our results to the `inclass-analysis.R` results, where the metrics were
 
@@ -203,5 +295,5 @@ cat("Sensitivity (LASSO classifier): ", cm$byClass['Sensitivity'], "\n")
 cat("Specificity (LASSO classifier): ", cm$byClass['Specificity'], "\n")
 ```
 
-Thus, accuracy is improved in our LASSO regression model (compared to 0.774), and we found a panel with 1 fewer protein than that of the benchmark (10 proteins)
+Thus, accuracy slightly down, same for auc, sensitivity, but specificity remains the same.
 
