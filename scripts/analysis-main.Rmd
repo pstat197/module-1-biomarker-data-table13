@@ -231,6 +231,44 @@ load(here("data", "biomarker-clean.RData")) # loads data as biomarker_clean
 
 ## 3. Repeat the analysis but carry out the entire selection procedure on a training partition -- in other words, set aside some testing data at the very beginning and don't use it until you are evaluating accuracy at the very end
 
+```{r}
+library(rsample)
+
+colnames(biomarker_clean) <- make.names(colnames(biomarker_clean), unique = TRUE)
+
+split <- initial_split(biomarker_clean, prop = 0.7, strata = group)
+train <- training(split)
+test  <- testing(split)
+
+train$group <- factor(train$group, levels = c("TD", "ASD"))
+test$group  <- factor(test$group,  levels = c("TD", "ASD"))
+
+feature_cols <- setdiff(names(biomarker_clean), "group")
+
+# Convert to numeric
+train[feature_cols] <- lapply(train[feature_cols], as.numeric)
+test[feature_cols]  <- lapply(test[feature_cols],  as.numeric)
+
+# Remove features that are all NA from training set
+all_na <- names(which(sapply(train[feature_cols], function(x) all(is.na(x)))))
+feature_cols <- setdiff(feature_cols, all_na)
+
+# Impute missing values (median of training set ONLY)
+train_medians <- sapply(train[feature_cols], function(x) median(x, na.rm = TRUE))
+for (f in feature_cols) {
+  train[[f]][is.na(train[[f]])] <- train_medians[[f]]
+  test[[f]][is.na(test[[f]])]   <- train_medians[[f]]
+}
+
+# Remove near-zero variance features based on training set
+is_const <- sapply(train[feature_cols], function(x) sd(x) < 1e-8 || !is.finite(sd(x)))
+feature_cols <- feature_cols[!is_const]
+
+dim(train); dim(test)
+table(train$group); table(test$group)
+```
+
+
 ## Choose a larger number (more than ten) of top predictive proteins using each selection method
 
 ```{r}
