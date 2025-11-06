@@ -1,0 +1,500 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\PassOptionsToPackage{dvipsnames,svgnames,x11names}{xcolor}
+%
+\documentclass[
+  letterpaper,
+  DIV=11,
+  numbers=noendperiod]{scrartcl}
+
+\usepackage{amsmath,amssymb}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else  
+    % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+% Make \paragraph and \subparagraph free-standing
+\makeatletter
+\ifx\paragraph\undefined\else
+  \let\oldparagraph\paragraph
+  \renewcommand{\paragraph}{
+    \@ifstar
+      \xxxParagraphStar
+      \xxxParagraphNoStar
+  }
+  \newcommand{\xxxParagraphStar}[1]{\oldparagraph*{#1}\mbox{}}
+  \newcommand{\xxxParagraphNoStar}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+  \let\oldsubparagraph\subparagraph
+  \renewcommand{\subparagraph}{
+    \@ifstar
+      \xxxSubParagraphStar
+      \xxxSubParagraphNoStar
+  }
+  \newcommand{\xxxSubParagraphStar}[1]{\oldsubparagraph*{#1}\mbox{}}
+  \newcommand{\xxxSubParagraphNoStar}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+\makeatother
+
+
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}\usepackage{longtable,booktabs,array}
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+
+\KOMAoption{captions}{tableheading}
+\makeatletter
+\@ifpackageloaded{caption}{}{\usepackage{caption}}
+\AtBeginDocument{%
+\ifdefined\contentsname
+  \renewcommand*\contentsname{Table of contents}
+\else
+  \newcommand\contentsname{Table of contents}
+\fi
+\ifdefined\listfigurename
+  \renewcommand*\listfigurename{List of Figures}
+\else
+  \newcommand\listfigurename{List of Figures}
+\fi
+\ifdefined\listtablename
+  \renewcommand*\listtablename{List of Tables}
+\else
+  \newcommand\listtablename{List of Tables}
+\fi
+\ifdefined\figurename
+  \renewcommand*\figurename{Figure}
+\else
+  \newcommand\figurename{Figure}
+\fi
+\ifdefined\tablename
+  \renewcommand*\tablename{Table}
+\else
+  \newcommand\tablename{Table}
+\fi
+}
+\@ifpackageloaded{float}{}{\usepackage{float}}
+\floatstyle{ruled}
+\@ifundefined{c@chapter}{\newfloat{codelisting}{h}{lop}}{\newfloat{codelisting}{h}{lop}[chapter]}
+\floatname{codelisting}{Listing}
+\newcommand*\listoflistings{\listof{codelisting}{List of Listings}}
+\makeatother
+\makeatletter
+\makeatother
+\makeatletter
+\@ifpackageloaded{caption}{}{\usepackage{caption}}
+\@ifpackageloaded{subcaption}{}{\usepackage{subcaption}}
+\makeatother
+
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+\usepackage{bookmark}
+
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same} % disable monospaced font for URLs
+\hypersetup{
+  pdftitle={Biomarkers of ASD},
+  pdfauthor={Lucas Childs, Minu Pabbathi, Nathan Kim, Bahaar Ahuja, Anna Liang},
+  colorlinks=true,
+  linkcolor={blue},
+  filecolor={Maroon},
+  citecolor={Blue},
+  urlcolor={Blue},
+  pdfcreator={LaTeX via pandoc}}
+
+
+\title{Biomarkers of ASD}
+\author{Lucas Childs, Minu Pabbathi, Nathan Kim, Bahaar Ahuja, Anna
+Liang}
+\date{2025-11-06}
+
+\begin{document}
+\maketitle
+
+
+\subsection{Abstract}\label{abstract}
+
+This report investigates blood biomarkers for autism spectrum disorder
+(ASD) with a focus on evaluating how methodological choices influence
+results. Using the dataset from Hewitson et al.~(2021), we examine
+protein distributions and justify the use of log-transformations to
+stabilize variance and reduce skewness. We explore subject-level
+outliers and assess whether their frequency differs between ASD and
+typically developing (TD) groups. We then evaluate how modifications to
+protein selection procedures, such as varying the number of top
+predictive proteins, using training/test partitions, and applying fuzzy
+intersections, affect classification performance. Finally, we identify
+alternative protein panels that achieve comparable or improved
+classification accuracy and benchmark these results against the original
+in-class analysis. This work highlights the sensitivity of biomarker
+analyses to preprocessing and methodological decisions and provides
+guidance for more robust ASD protein panel selection.
+
+\subsection{Aim}\label{aim}
+
+The aim of this report is to explore the sensitivity of ASD biomarker
+analyses to key methodological choices. Specifically, we examine the
+effects of log-transforming protein levels, assess the presence of
+subject-level outliers and their group distribution, and investigate how
+modifications to protein selection procedures (e.g., training/test
+splits, number of top proteins, fuzzy intersections) impact
+classification performance. Finally, we identify alternative protein
+panels that achieve comparable or improved classification accuracy and
+benchmark these results against the original in-class analysis.
+
+\subsection{Dataset}\label{dataset}
+
+The data consist of blood serum samples from 76 boys with autism
+spectrum disorder (ASD) and 78 typically developing (TD) boys, aged 18
+months to 8 years. Proteomic analysis was performed using SomaLogic's
+SOMAScan™ 1.3K platform, measuring levels of 1,317 proteins. Two
+additional variables, ADOS (ASD severity) and group (ASD vs.~TD), were
+included.
+
+Preprocessing involved removing missing values, applying a log₁₀
+transformation to stabilize variance and reduce skewness, centering and
+scaling each protein to standardize distributions, and trimming extreme
+outliers to prevent disproportionate influence. For exploratory
+analyses, we also considered an untrimmed dataset to examine
+subject-level outliers.
+
+\subsection{Summary of published
+analysis}\label{summary-of-published-analysis}
+
+The original researchers used multiple \emph{t}-tests to see whether
+there were significant differences in protein levels between the ASD
+group and the neurotypical group. Based on those \emph{t} values, the
+top 10 proteins were selected for the prediction model. Each protein was
+also correlated with ADOS scores and the top 10 highly correlated
+proteins were selected. The third approach was random forest, which
+involves using a random forest to predict whether a participant has ASD
+or is typically developing. By keeping track of which variables were
+used most to define splits, a variable importance score can be used to
+determine which predictors were most influential in prediction. Using
+this method, the top proteins were selected.
+
+After running all three methods and determining the top 10 proteins for
+each method, 5 proteins that were common to all three methods were
+selected as the core proteins. Each of the other proteins were added one
+at a time to see their impact on the AUC, leading to about four
+additional proteins being classified as optimal proteins. The final 9
+proteins were IgD, suPAR, MAPK14, EPHB2, DERM, ROR1, GI24, elF-4H, and
+ARSB. After all nine were combined, the AUC of the classifier was
+approximately 0.860.
+
+\subsection{Findings}\label{findings}
+
+\subsubsection{Impact of preprocessing and
+outliers}\label{impact-of-preprocessing-and-outliers}
+
+After looking at the raw protein level distributions for a sample of 4
+proteins in the dataset, it became clear that the scale of each protein
+level was very different across proteins. For example, one protein's
+mean was 17,164 while another's was 458. Furthermore, we found certain
+proteins had skewed distributions where one protein had a mean roughly
+5,000 units larger than its median, indicating a right skew. Looking at
+each protein's density further revealed the differing scales of each
+protein level, large outliers, and skewed distributions apparent in 2
+out of the 4 randomly selected proteins.
+
+The log transformation of the protein levels helps to compress the scale
+of protein levels across the wide range of positive values that were
+encountered. Additionally, the logarithm helps with skewed data, helping
+to make data more symmetric and closer to a normal distribution (as
+confirmed with histograms and a QQ Plot).
+
+\begin{figure}[H]
+
+{\centering \includegraphics[width=0.5\textwidth,height=\textheight]{../images/Q1Comparison.png}
+
+}
+
+\caption{Question 1 comparison}
+
+\end{figure}%
+
+From the density plot, \texttt{prot2} looks skewed (strongly
+right-skewed). It contain large outliers, and the scale of
+\texttt{prot2}'s protein level is very high. But, after log
+transforming, the right-skewed \texttt{prot2} now appears more symmetric
+and of a much smaller and more readable scale.
+
+\textbf{Task 2:} After removing the original trimming, we flagged
+protein-level outliers at \(|z|>3\), where 99.7\% of data is captured
+under a normal curve. Using the Tukey cutoff
+\((Q3 + 1.5\cdot IQR \approx 29.4)\), the 154 test subjects were
+considered outliers if they had \(\geq 30\) outlier proteins. This
+flagged 13 outlier subjects, as listed below.
+
+\begin{center}
+\includegraphics[width=1.35417in,height=\textheight]{images/q2top13-02.png}
+\end{center}
+
+The frequency of these outlier subjects are
+\(\frac{4}{76} \approx 5.3\%\) in the ASD group and
+\(\frac{9}{78} \approx 11.5\%\) in the TD group.~
+
+We then compared the number of outlier proteins for subjects across both
+groups.
+
+\begin{center}
+\includegraphics[width=5.20833in,height=\textheight]{images/q2boxplot-03.png}
+\end{center}
+
+From the visual, it seems like the TD group has more subjects w/ higher
+outlier counts, including the overall maximum around 150. This supports
+the previous table, as 9/13 of the outlier subjects were from the TD
+group.
+
+Although the table and box plots showed that outlier subjects were more
+common in TD than ASD, a further two-proportion test found no
+statistically significant difference in this frequency of outlier
+subjects between both groups.
+
+\begin{center}
+\includegraphics[width=1.5625in,height=\textheight]{images/q2proptest-01.png}
+\end{center}
+
+Since the p value of 0.2668 is greater than alpha = 0.05, we conclude
+there's no statistically significant difference in the frequency of
+outlier subjects between ASD and TD. This suggests that extreme values
+are concentrated in a small number of individuals rather than
+representing a systematic group difference. These findings support the
+validity of the original trimming approach. The extreme values appear to
+be leverage points or noise rather than having significant impact, and
+the \(\pm 3\) SD trimming in the initial dataset is appropriate. Thus,
+we can proceed with the original trimmed dataset for our analysis.
+
+\subsubsection{Methodological
+variations}\label{methodological-variations}
+
+To evaluate the sensitivity of the analysis to different methodological
+choices, we first modified the workflow so that all feature selection
+was carried out exclusively on a training partition, while a separate
+test set was held out and used only once at the very end for evaluation.
+This change avoids data leakage and gives a more realistic estimate of
+model performance.
+
+The original analysis selected 10 proteins. To improve the predictive
+ability, we extended this to 20 proteins. The top 20 proteins from the
+\emph{t}-tests and random forest were used to fit a logistic regression
+model. This improved the sensitivity by 6\%, specificity by 13\%,
+accuracy by 9\%, and AUC by 4\%, likely because adding more predictors
+will explain more of the variability.
+
+Additionally, instead of using a hard intersection between the top 10
+proteins, we tested using a fuzzy intersection, meaning we allowed some
+overlap between proteins from both analyses. The new analysis decreased
+the sensitivity by 20\%, specificity by 7\%, accuracy by 10\%, and AUC
+by 12\%. This could be because proteins that were found to be important
+in both analysis likely had the highest predictive power. When using
+other proteins that are less explanative, the accuracy decreases
+significantly.
+
+!\href{../images/q3_plot_1.png}{Question 3 20 Protein vs 10 Protein
+Comparison}
+
+!\href{../images/q3_plot_2.png}{Question 3 Fuzzy vs Hard Comparison}
+
+\subsubsection{Improved classifier}\label{improved-classifier}
+
+We explored two distinct alternative panel approaches for Task 4: a Pure
+LASSO approach and a Guided LASSO approach, benchmarking both against
+the original In-class Intersection model (a 5-protein panel). Our
+methods sought either a comparable simpler panel or an alternative panel
+with improved classification performance.The Pure LASSO approach used
+LASSO penalized regression for both feature selection and final
+classification, resulting in a 43-protein panel. Proteins identified
+through both multiple testing with t-tests and Random Forest importance
+(\texttt{proteins\_sstar}) were assigned zero penalty to ensure these
+were included in the panel without significant shrinkage due to
+regularization. So, this prior validation was used since there was
+strong prior evidence that these proteins were relevant. The remaining
+proteins not selected by the two aforementioned methods received L1
+regularization (LASSO regularization), allowing us to discover
+additional predictive biomarkers while controlling overfitting. We can
+think of this method from a Bayesian standpoint where the prior data
+(pre-selected panel of 5 proteins, \texttt{proteins\_sstar}) informed
+our belief about protein importance. Overall, our method displayed
+increased classification accuracy, specifically highlighted by the
+metric: `accuracy'. The metrics are depicted below:
+
+\[
+\begin{array}{llr}
+\hline
+\textbf{metric} & \textbf{estimator} & \textbf{estimate} \\
+\hline
+\text{sensitivity} & \text{binary} & 0.750 \\
+\text{specificity} & \text{binary} & 0.933 \\
+\text{accuracy} & \text{binary} & 0.839 \\
+\text{roc auc} & \text{binary} & 0.858 \\
+\hline
+\end{array}
+\] Compared to the benchmark results: \[
+\begin{array}{llr}
+\hline
+\textbf{metric} & \textbf{estimator} & \textbf{estimate} \\
+\hline
+\text{sensitivity} & \text{binary} & 0.812 \\
+\text{specificity} & \text{binary} & 0.733 \\
+\text{accuracy} & \text{binary} & 0.774 \\
+\text{roc auc} & \text{binary} & 0.883 \\
+\hline
+\end{array}
+\]
+
+This panel prioritized reducing false positives and resulted in a
+notable performance trade-off:
+
+comparison\_data \textless- data.frame( Metric = c(``Accuracy'',
+``Sensitivity'', ``Specificity'', ``AUROC''), InClassIntersection =
+c(0.774, 0.812, 0.733, 0.883), PureLASSO = c(0.767, 0.750, 0.933,
+0.858), ChangeVsBaseline = c(``\(\\approx 1\\%\) decrease'',
+``\(7.6\\%\) decrease'', ``\(27.3\\%\) increase'', ``\(\\approx 2.8\\%\)
+decrease''), KeyInsight = c(``Comparable overall accuracy.'', ``Reduced
+ability to correctly identify ASD cases.'', ``Vastly improved
+performance in ruling out controls.'', ``Lower overall discrimination
+ability.'') )
+
+\section{Render the table using kable with appropriate
+formatting}\label{render-the-table-using-kable-with-appropriate-formatting}
+
+knitr::kable( comparison\_data, caption = ``Comparative Performance and
+Insights: Pure LASSO vs.~In-class Baseline'', col.names = c(``Metric'',
+``In-class Intersection'', ``Pure LASSO'', ``Change vs.~Baseline'',
+``Key Insight''), align = `lcccc', \# Left-align first column,
+Center-align the rest digits = 3 \# Ensure numerical columns are
+formatted nicely )
+
+\$\$
+
+The most significant finding from the Pure LASSO model is the dramatic
+increase in Specificity (from \(0.733\) to \(0.933\)). This trade-off is
+valuable, as it greatly reduces the rate of false positives, making the
+panel highly reliable for control classification, a desirable
+characteristic for preliminary diagnostic screening.
+
+In addition to the Pure LASSO model, the Guided LASSO approach (using
+prior knowledge combined with LASSO, as detailed in the project
+narrative) resulted in a 35-protein panel. The proteins selected for the
+classifier are the following: - CD59 - 4-1BB - Dtk - Cadherin-5 - HAI-1
+- Kallikrein 11 - PAI-1 - Growth hormone receptor - IGFBP-4 - MRC2 -
+CRDL1 - IL-17 RD - TPSG1 - MP2K2 - ENPP7 - MFGM - PCSK7 - ITI heavy
+chain H4 - IgD - DBNL - DERM - Elafin - RELT - PPID - Semaphorin 3E -
+CD27 - CNDP1 - IL-17 RC - SRCN1 - Epo - GDNF - 14-3-3 protein zeta/delta
+- a-Synuclein - CSRP3 - MIG
+
+\begin{figure}[H]
+
+{\centering \includegraphics[width=0.5\textwidth,height=\textheight]{../images/Q4PureLasso.png}
+
+}
+
+\caption{Question 4 Pure LASSO}
+
+\end{figure}%
+
+While the performance metrics for this model were similar to the
+baseline across all metrics except Specificity (Accuracy \(0.770\),
+Sensitivity \(0.745\), Specificity \(0.733\), AUROC \(0.857\)), the
+overall strategy of combining multiple feature selection methods
+(t-tests, Random Forest, and Guided LASSO) provided a robust and
+statistically validated pathway to stable panel selection.
+
+\subsection{Conclusion}\label{conclusion}
+
+Our comprehensive analysis demonstrates the critical impact of
+methodological choices on blood biomarker classification performance for
+ASD. Key findings include the necessary use of log-transformation to
+manage data scale and skewness, and the finding that subject-level
+outliers did not significantly differ between ASD and TD groups,
+supporting the initial data trimming. Most significantly, our
+alternative panel approaches highlighted a crucial performance trade-off
+in Task 4:
+
+The \textbf{Pure LASSO} model (43 proteins) sacrificed a small amount of
+overall discriminative ability (AUROC decreased by \(\approx 2.8\%\))
+and Sensitivity (decreased by \(7.6\%\)) to achieve a massive \(27.3\%\)
+increase in Specificity (from \(0.733\) to \(0.933\)). This trade-off is
+highly valuable for diagnostic applications where minimizing false
+positives (incorrectly classifying a TD subject as ASD) is paramount for
+initial screening confidence. The \textbf{Guided LASSO} approach
+provided a robust, multi-method validation pathway, resulting in a
+stable 35-protein panel with accuracy similar to the baseline.
+
+\subsection{Next Steps}\label{next-steps}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  External Validation: Validate the Pure LASSO panel (or the Guided
+  LASSO panel) on an independent, large-scale dataset to confirm the
+  observed high Specificity and generalizability across different
+  populations.
+\item
+  Optimize Trade-off: Explore Elastic Net (a mix of L1 and L2
+  regularization) to fine-tune the balance between Sensitivity
+  (identifying true ASD cases) and Specificity (ruling out controls)
+  based on the clinical priority.
+\item
+  Biological Interpretation: Conduct a functional analysis of the 43
+  proteins selected by the Pure LASSO model to determine if they align
+  with known biological pathways associated with ASD, thereby providing
+  biological grounding for the statistical model.
+\end{enumerate}
+
+
+
+
+\end{document}
