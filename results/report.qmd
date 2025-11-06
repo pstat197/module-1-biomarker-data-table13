@@ -1,7 +1,7 @@
 ---
 title: "Biomarkers of ASD"
 subtitle: "If you want a subtitle put it here"
-author: "Lucas Childs, Bahaar Ahuja, ..."
+author: "Lucas Childs, Minu Pabbathi, Nathan Kim, Bahaar Ahuja, Anna Liang"
 date: last-modified
 published-title: "Updated"
 editor: visual
@@ -49,9 +49,9 @@ After running all three methods and determining the top 10 proteins for each met
 
 From the density plot, `prot2` looks skewed (strongly right-skewed). It contain large outliers, and the scale of `prot2`'s protein level is very high. But, after log transforming, the right-skewed `prot2` now appears more symmetric and of a much smaller and more readable scale.
 
-**Q2:**
+**Q2:** We temporarily removed trimming and flagged protein-level outliers at $|z|>3$, then aggregated outliers by subject to identify subject-level outliers. Applying the Tukey boxplot rule to these counts revealed a small set of clear outlier subjects. Descriptively, outlier subjects were more common in TD than ASD, but a two-proportion test indicated the difference was not statistically significant. Overall, extreme values are concentrated in a few participants, so the trimming at $\pm3$ standard deviations mainly reduces their influence rather than indicating a group effect. This validates the preprocessing approach and allows us to proceed with the trimmed data
 
-**Q3:**
+**Q3:** To evaluate the sensitivity of the analysis to different methodological choices, we first modified the workflow so that all feature selection was carried out exclusively on a training partition, while a separate test set was held out and used only once at the very end for evaluation. This change avoids data leakage and gives a more realistic estimate of model performance. Next, instead of selecting only the top 10 proteins per method as was done in class, we increased this number to 20, which improved the model’s sensitivity, specificity, and AUC. For example, using 20 proteins, the logistic regression model achieved sensitivity of 0.75, specificity of 0.867, accuracy of 0.806, and ROC AUC of 0.892 on the test set. Finally, we compared a hard intersection of selected proteins to a fuzzy intersection approach. Under the fuzzy intersection, proteins were combined if they appeared in either method, rather than requiring overlap across all methods. This more flexible approach resulted in lower performance (sensitivity = 0.5625, specificity = 0.8000, accuracy = 0.6774, AUC = 0.7833) compared to the hard intersection and full panel, suggesting that although fuzzy selection increases feature stability, it may include weaker predictors and reduce classification accuracy.
 
 **Q4:** We chose to find an alternate protein panel that achieves improved classification accuracy using a guided LASSO approach with differential penalties. Proteins identified through both multiple testing with t-tests and Random Forest importance (`proteins_sstar`) were assigned zero penalty to ensure these were included in the panel without significant shrinkage due to regularization. So, this prior validation was used since there was strong prior evidence that these proteins were relevant. The remaining proteins not selected by the two aforementioned methods received L1 regularization (LASSO regularization), allowing us to discover additional predictive biomarkers while controlling overfitting. We can think of this method from a Bayesian standpoint where the prior data (pre-selected panel of 5 proteins, `proteins_sstar`) informed our belief about protein importance. Overall, our method displayed increased classification accuracy, specifically highlighted by the metric: 'accuracy'. The metrics are depicted below:
 
@@ -127,11 +127,15 @@ Summarize your findings here. I've included some subheaders in a way that seems 
 
 The log transformation of the protein levels helps to compress the scale of protein levels across the wide range of positive values that were encountered. Additionally, the logarithm helps with skewed data, helping to make data more symmetric and closer to a normal distribution (as confirmed with histograms and a QQ Plot).
 
-**Task 2:**
+**Task 2:** After removing the original trimming, we flagged protein-level outliers at $|z|>3$, where 99.7% of data is captured under a normal curve. Using the Tukey cutoff $(Q3 + 1.5\cdot IQR \approx 29.4)$, the 154 test subjects were considered outliers if they had $\geq 30$ outlier proteins. This flagged 13 outlier subjects, distributed as $\frac{4}{76} \approx 5.3\%$ in the ASD group and $\frac{9}{78} \approx 11.5\%$ in the TD group. However, a two-proportion test found no statistically significant difference in this frequency of outlier subjects between ASD and TD (p = 0.2668), suggesting that extreme values are concentrated in a small number of individuals rather than representing a systematic group difference. These findings support the validity of the original trimming approach. The extreme values appear to be leverage points or noise rather than having significant impact, and the $\pm 3$ SD trimming in the initial dataset is appropriate. Thus, we can proceed with the original trimmed dataset for our analysis.
 
 ### Methodological variations
 
-Task 3
+**Task 3:**
+
+The original analysis selected 10 proteins. To improve the predictive ability, we extended this to 20 proteins. The top 20 proteins from the *t*-tests and random forest were used to fit a logistic regression model. This improved the sensitivity by 6%, specificity by 13%, accuracy by 9%, and AUC by 4%, likely because adding more predictors will explain more of the variability.
+
+Additionally, instead of using a hard intersection between the top 10 proteins, we tested using a fuzzy intersection, meaning we allowed some overlap between proteins from both analyses. The new analysis decreased the sensitivity by 20%, specificity by 7%, accuracy by 10%, and AUC by 12%. This could be because proteins that were found to be important in both analysis likely had the highest predictive power. When using other proteins that are less explanative, the accuracy decreases significantly.
 
 ### Improved classifier
 
