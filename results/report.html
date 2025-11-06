@@ -138,17 +138,8 @@ window.Quarto = {
 <p>The log transformation of the protein levels helps to compress the scale of protein levels across the wide range of positive values that were encountered. Additionally, the logarithm helps with skewed data, helping to make data more symmetric and closer to a normal distribution (as confirmed with histograms and a QQ Plot).</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="../images/Q1Comparison.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
+<p><img src="images/Q1Comparison%20copy.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
 </figure>
-</div>
-<div class="cell">
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="../images/Q1Comparison.png" class="img-fluid figure-img"></p>
-</figure>
-</div>
-</div>
 </div>
 <p>From the density plot, <code>prot2</code> looks skewed (strongly right-skewed). It contain large outliers, and the scale of <code>prot2</code>’s protein level is very high. But, after log transforming, the right-skewed <code>prot2</code> now appears more symmetric and of a much smaller and more readable scale.</p>
 <p><strong>Task 2:</strong> After removing the original trimming, we flagged protein-level outliers at <span class="math inline">\(|z|&gt;3\)</span>, where 99.7% of data is captured under a normal curve. Using the Tukey cutoff <span class="math inline">\((Q3 + 1.5\cdot IQR \approx 29.4)\)</span>, the 154 test subjects were considered outliers if they had <span class="math inline">\(\geq 30\)</span> outlier proteins. This flagged 13 outlier subjects, as listed below.</p>
@@ -178,8 +169,8 @@ window.Quarto = {
 <p>To evaluate the sensitivity of the analysis to different methodological choices, we first modified the workflow so that all feature selection was carried out exclusively on a training partition, while a separate test set was held out and used only once at the very end for evaluation. This change avoids data leakage and gives a more realistic estimate of model performance.</p>
 <p>The original analysis selected 10 proteins. To improve the predictive ability, we extended this to 20 proteins. The top 20 proteins from the <em>t</em>-tests and random forest were used to fit a logistic regression model. This improved the sensitivity by 6%, specificity by 13%, accuracy by 9%, and AUC by 4%, likely because adding more predictors will explain more of the variability.</p>
 <p>Additionally, instead of using a hard intersection between the top 10 proteins, we tested using a fuzzy intersection, meaning we allowed some overlap between proteins from both analyses. The new analysis decreased the sensitivity by 20%, specificity by 7%, accuracy by 10%, and AUC by 12%. This could be because proteins that were found to be important in both analysis likely had the highest predictive power. When using other proteins that are less explanative, the accuracy decreases significantly.</p>
-<p><img src="images/q3_plot_1.png" class="img-fluid" style="width:50.0%"></p>
-<p><img src="images/q3_plot_2.png" class="img-fluid" style="width:50.0%"></p>
+<p><img src="images/q3_plot_1%20copy.png" class="img-fluid" style="width:50.0%"></p>
+<p><img src="images/q3_plot_2%20copy.png" class="img-fluid" style="width:50.0%"></p>
 </section>
 <section id="improved-classifier" class="level3">
 <h3 class="anchored" data-anchor-id="improved-classifier">Improved classifier</h3>
@@ -303,7 +294,7 @@ window.Quarto = {
 </div>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="../images/Q4PureLasso.png" class="img-fluid figure-img" style="width:50.0%"></p>
+<p><img src="images/Q4PureLasso%20copy.png" class="img-fluid figure-img" style="width:50.0%"></p>
 <figcaption>Question 4 Pure LASSO</figcaption>
 </figure>
 </div>

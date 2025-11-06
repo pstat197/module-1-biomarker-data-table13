@@ -16,7 +16,6 @@ execute:
 ```{r}
 # load any other packages and read data here
 library(tidyverse)
-library(here)
 ```
 
 ## Abstract
@@ -52,12 +51,7 @@ After looking at the raw protein level distributions for a sample of 4 proteins 
 The log transformation of the protein levels helps to compress the scale of protein levels across the wide range of positive values that were encountered. Additionally, the logarithm helps with skewed data, helping to make data more symmetric and closer to a normal distribution (as confirmed with histograms and a QQ Plot).
 
 
-![](../images/Q1Comparison.png){fig-align="center"}
-
-```{r}
-knitr::include_graphics("../images/Q1Comparison.png")
-```
-
+![](images/Q1Comparison copy.png){fig-align="center"}
 
 From the density plot, `prot2` looks skewed (strongly right-skewed). It contain large outliers, and the scale of `prot2`'s protein level is very high. But, after log transforming, the right-skewed `prot2` now appears more symmetric and of a much smaller and more readable scale.
 
@@ -87,9 +81,9 @@ The original analysis selected 10 proteins. To improve the predictive ability, w
 
 Additionally, instead of using a hard intersection between the top 10 proteins, we tested using a fuzzy intersection, meaning we allowed some overlap between proteins from both analyses. The new analysis decreased the sensitivity by 20%, specificity by 7%, accuracy by 10%, and AUC by 12%. This could be because proteins that were found to be important in both analysis likely had the highest predictive power. When using other proteins that are less explanative, the accuracy decreases significantly.
 
-![](images/q3_plot_1.png){width="50%"}
+![](images/q3_plot_1 copy.png){width="50%"}
 
-![](images/q3_plot_2.png){width="50%"}
+![](images/q3_plot_2 copy.png){width="50%"}
 
 ### Improved classifier
 
@@ -216,7 +210,7 @@ knitr::kable(
 )
 ```
 
-![Question 4 Pure LASSO](../images/Q4PureLasso.png){width="50%"}
+![Question 4 Pure LASSO](images/Q4PureLasso copy.png){width="50%"}
 
 While the performance metrics for this model were similar to the baseline across all metrics, the overall strategy of combining multiple feature selection methods (t-tests, Random Forest, and Guided LASSO) provided a robust and statistically validated pathway to stable panel selection.
 
