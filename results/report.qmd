@@ -48,7 +48,7 @@ After looking at the raw protein level distributions for a sample of 4 proteins 
 
 The log transformation of the protein levels helps to compress the scale of protein levels across the wide range of positive values that were encountered. Additionally, the logarithm helps with skewed data, helping to make data more symmetric and closer to a normal distribution (as confirmed with histograms and a QQ Plot).
 
-![Question 1 comparison](../images/Q1Comparison.png){alt="Question 1 comparison" width="50%"}
+![Question 1 comparison](../images/Q1Comparison.png){width="50%"}
 
 From the density plot, `prot2` looks skewed (strongly right-skewed). It contain large outliers, and the scale of `prot2`'s protein level is very high. But, after log transforming, the right-skewed `prot2` now appears more symmetric and of a much smaller and more readable scale.
 
