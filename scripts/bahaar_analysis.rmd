@@ -77,6 +77,34 @@ cat("\nQ4 Alternative Panel (Pure LASSO features):\n")
 print(lasso_features)
 ```
 
+```{r}
+# Coefficient plot (Pure LASSO)
+library(ggplot2)
+
+coef_df <- data.frame(
+  protein = lasso_features, # These are your actual protein names!
+  coefficient = as.numeric(lasso_coef[lasso_features,])
+)
+
+num_groups <- 4 
+
+coef_df$group <- cut(
+  1:nrow(coef_df), 
+  breaks = num_groups, 
+  labels = paste("Group", 1:num_groups)
+)
+
+ggplot(coef_df, aes(x = reorder(protein, coefficient), y = coefficient)) +
+  geom_col(fill="steelblue") +
+  coord_flip() +
+  # This is the key: splits the plot into manageable panels
+  facet_wrap(~group, scales = "free_y", ncol = 2) + 
+  labs(title="Pure LASSO: Selected Protein Coefficients (Facet View)",
+       x="Protein", y="Coefficient") +
+  theme_minimal() +
+  # Optional: Tweak text size for better fit
+  theme(axis.text.y = element_text(size = 8))
+```
 
 ```{r}
 # 4. Evaluation of LASSO Classifier on Test Set (The Answer)
@@ -97,6 +125,20 @@ cat("\nAUROC (LASSO classifier) on Test Set: ",
 cat("Test Set Accuracy (LASSO classifier): ", 
     confusionMatrix(pred_class_lasso, y_test, 
                     positive = "ASD")$overall['Accuracy'], "\n")
+```
+
+```{r}
+library(knitr)
+metrics <- data.frame(
+  Model = c("In-class Intersection","Pure LASSO","Guided LASSO"),
+  Accuracy = c(0.774, 0.767, 0.770),
+  Sensitivity = c(0.812, 0.750, 0.745),
+  Specificity = c(0.733, 0.933, 0.733),
+  AUROC = c(0.883, 0.8578, 0.857)
+)
+
+kable(metrics, caption = "Performance comparison across models", digits=3)
+
 ```
 Q4: Use any method to find either a simpler panel or an alternative panel.
 
