@@ -5,7 +5,7 @@ author: "Lucas Childs, Minu Pabbathi, Nathan Kim, Bahaar Ahuja, Anna Liang"
 date: last-modified
 published-title: "Updated"
 editor: visual
-format: html
+format: pdf
 code-copy: true
 execute:
   message: false
@@ -160,6 +160,7 @@ knitr::kable(
 )
 
 ```
+
 
 
 The most significant finding from the Pure LASSO model is the dramatic increase in Specificity (from $0.733$ to $0.933$). This trade-off is valuable, as it greatly reduces the rate of false positives, making the panel highly reliable for control classification, a desirable characteristic for preliminary diagnostic screening.
